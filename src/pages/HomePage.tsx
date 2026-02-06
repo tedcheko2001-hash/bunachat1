@@ -4,13 +4,14 @@ import { useApp, t } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
+import HeroSection from '@/components/HeroSection';
+import UserSearch from '@/components/UserSearch';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { 
   MessageCircle, Coffee, Newspaper, Briefcase, 
-  Link2, ChevronRight, Plus, Image, Heart, MessageSquare
+  Link2, ChevronRight, Plus, Image, Heart, MessageSquare, Search, X
 } from 'lucide-react';
-import homeHero from '@/assets/home-hero.png';
 
 interface Post {
   id: string;
@@ -18,7 +19,7 @@ interface Post {
   image_url: string | null;
   created_at: string;
   user_id: string;
-  likes: { id: string }[];
+  likes: { id: string; user_id: string }[];
   comments: { id: string }[];
 }
 
@@ -28,6 +29,7 @@ const HomePage = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [profiles, setProfiles] = useState<Record<string, { name: string; avatar_url: string | null }>>({});
   const [showPostModal, setShowPostModal] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const [postContent, setPostContent] = useState('');
   const [postImage, setPostImage] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
@@ -38,6 +40,9 @@ const HomePage = () => {
     const channel = supabase
       .channel('posts-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
+        fetchPosts();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, () => {
         fetchPosts();
       })
       .subscribe();
@@ -52,7 +57,7 @@ const HomePage = () => {
       .from('posts')
       .select(`
         id, content, image_url, created_at, user_id,
-        likes (id),
+        likes (id, user_id),
         comments (id)
       `)
       .order('created_at', { ascending: false })
@@ -61,19 +66,20 @@ const HomePage = () => {
     if (!error && data) {
       setPosts(data);
       
-      // Fetch profiles for all post authors
       const userIds = [...new Set(data.map(p => p.user_id))];
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('user_id, name, avatar_url')
-        .in('user_id', userIds);
-      
-      if (profilesData) {
-        const profileMap: Record<string, { name: string; avatar_url: string | null }> = {};
-        profilesData.forEach(p => {
-          profileMap[p.user_id] = { name: p.name, avatar_url: p.avatar_url };
-        });
-        setProfiles(profileMap);
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, name, avatar_url')
+          .in('user_id', userIds);
+        
+        if (profilesData) {
+          const profileMap: Record<string, { name: string; avatar_url: string | null }> = {};
+          profilesData.forEach(p => {
+            profileMap[p.user_id] = { name: p.name, avatar_url: p.avatar_url };
+          });
+          setProfiles(profileMap);
+        }
       }
     }
   };
@@ -94,13 +100,15 @@ const HomePage = () => {
 
       if (postImage) {
         const fileExt = postImage.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
         
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('posts')
           .upload(fileName, postImage);
 
-        if (!uploadError && uploadData) {
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+        } else {
           const { data: urlData } = supabase.storage
             .from('posts')
             .getPublicUrl(fileName);
@@ -114,14 +122,19 @@ const HomePage = () => {
         image_url: imageUrl,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Post error:', error);
+        throw error;
+      }
 
       toast.success('Posted successfully!');
       setPostContent('');
       setPostImage(null);
       setShowPostModal(false);
+      fetchPosts();
     } catch (err) {
-      toast.error('Failed to post');
+      console.error('Failed to post:', err);
+      toast.error('Failed to post. Please try again.');
     } finally {
       setPosting(false);
     }
@@ -130,14 +143,10 @@ const HomePage = () => {
   const handleLike = async (postId: string) => {
     if (!user) return;
 
-    const { data: existingLike } = await supabase
-      .from('likes')
-      .select('id')
-      .eq('post_id', postId)
-      .eq('user_id', user.id)
-      .single();
+    const post = posts.find(p => p.id === postId);
+    const isLiked = post?.likes.some(l => l.user_id === user.id);
 
-    if (existingLike) {
+    if (isLiked) {
       await supabase.from('likes').delete().match({ post_id: postId, user_id: user.id });
     } else {
       await supabase.from('likes').insert({ post_id: postId, user_id: user.id });
@@ -162,20 +171,26 @@ const HomePage = () => {
     <div className="page-container bg-background">
       <Header />
 
-      {/* Hero Section */}
-      <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden shadow-buna">
-        <img 
-          src={homeHero} 
-          alt="Buna Chat Hero" 
-          className="w-full h-48 object-cover object-top"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-4 left-4 text-white">
-          <h2 className="text-2xl font-bold">{t('nuBunaTetu', language)} ☕️</h2>
-          <p className="text-white/90">{t('comeDrinkCoffee', language)}</p>
-          <p className="text-white/80 text-sm">{t('goodMorning', language)}</p>
-        </div>
+      {/* Search Toggle */}
+      <div className="mx-4 mt-4">
+        <button
+          onClick={() => setShowSearch(!showSearch)}
+          className="w-full buna-card p-3 flex items-center gap-3 hover:bg-muted/50 transition-colors"
+        >
+          <Search size={20} className="text-muted-foreground" />
+          <span className="text-muted-foreground">Search users...</span>
+        </button>
       </div>
+
+      {/* Search Panel */}
+      {showSearch && (
+        <div className="mx-4 mt-2">
+          <UserSearch onClose={() => setShowSearch(false)} />
+        </div>
+      )}
+
+      {/* Hero Section */}
+      <HeroSection />
 
       {/* Generate Invite */}
       <div className="mx-4 mt-4">
@@ -251,6 +266,7 @@ const HomePage = () => {
           <h3 className="font-semibold">Recent Posts</h3>
           {posts.map(post => {
             const profile = profiles[post.user_id];
+            const isLiked = user && post.likes.some(l => l.user_id === user.id);
             return (
               <div key={post.id} className="buna-card p-4">
                 <div className="flex items-center gap-3 mb-3">
@@ -284,9 +300,11 @@ const HomePage = () => {
                 <div className="flex items-center gap-6 pt-2 border-t border-border">
                   <button 
                     onClick={() => handleLike(post.id)}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+                    className={`flex items-center gap-2 transition-colors ${
+                      isLiked ? 'text-destructive' : 'text-muted-foreground hover:text-primary'
+                    }`}
                   >
-                    <Heart size={18} fill={post.likes.length > 0 ? 'currentColor' : 'none'} />
+                    <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
                     <span className="text-sm">{post.likes.length}</span>
                   </button>
                   <button 
@@ -307,7 +325,12 @@ const HomePage = () => {
       {showPostModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
           <div className="bg-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 slide-up">
-            <h3 className="text-lg font-semibold mb-4">Create Post</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Create Post</h3>
+              <button onClick={() => setShowPostModal(false)}>
+                <X size={24} className="text-muted-foreground" />
+              </button>
+            </div>
             
             <textarea
               value={postContent}
