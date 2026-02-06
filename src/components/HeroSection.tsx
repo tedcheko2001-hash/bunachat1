@@ -8,12 +8,12 @@ const HeroSection = () => {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden shadow-buna">
-      {/* Fallback gradient background - always visible */}
+    <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden shadow-buna min-h-48">
+      {/* Fallback gradient background - always visible until image loads */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-buna-brown"
+        className="absolute inset-0"
         style={{ 
-          background: 'linear-gradient(135deg, hsl(100, 50%, 40%) 0%, hsl(100, 45%, 35%) 50%, hsl(30, 50%, 30%) 100%)' 
+          background: 'linear-gradient(135deg, hsl(45, 60%, 92%) 0%, hsl(40, 50%, 88%) 50%, hsl(35, 45%, 85%) 100%)' 
         }}
       />
       
@@ -22,12 +22,19 @@ const HeroSection = () => {
         <img 
           src={homeHero} 
           alt="Buna Chat Hero" 
-          className={`relative w-full h-48 object-cover object-top transition-opacity duration-300 ${
+          className={`relative w-full h-48 object-cover object-left transition-opacity duration-500 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           onLoad={() => setImageLoaded(true)}
           onError={() => setImageError(true)}
         />
+      )}
+      
+      {/* Fallback content when image fails */}
+      {imageError && (
+        <div className="relative h-48 flex items-center justify-center">
+          <div className="text-6xl opacity-50">☕️</div>
+        </div>
       )}
       
       {/* Gradient overlay for text readability */}
@@ -39,13 +46,6 @@ const HeroSection = () => {
         <p className="text-white/90 drop-shadow-md">{t('comeDrinkCoffee', language)}</p>
         <p className="text-white/80 text-sm drop-shadow-md">{t('goodMorning', language)}</p>
       </div>
-      
-      {/* Decorative coffee beans when image fails */}
-      {imageError && (
-        <div className="relative h-48 flex items-center justify-center">
-          <div className="text-6xl opacity-30">☕️</div>
-        </div>
-      )}
     </div>
   );
 };

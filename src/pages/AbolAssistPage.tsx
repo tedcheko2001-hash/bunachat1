@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Send, Bot } from 'lucide-react';
+import { ArrowLeft, Send, Bot, RefreshCw } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 
 interface Message {
@@ -16,7 +16,7 @@ const AbolAssistPage = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Selam! ☕️ I\'m Abol Assist, your Ethiopian coffee culture guide. Ask me anything about Buna traditions, the coffee ceremony, or how to use Buna Chat!',
+      content: 'Selam! ☕️ I\'m Abol Assist, your Ethiopian coffee culture guide. Ask me anything about Buna traditions, the coffee ceremony, Ethiopian culture, or how to use Buna Chat!',
     },
   ]);
   const [input, setInput] = useState('');
@@ -26,6 +26,26 @@ const AbolAssistPage = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const getFallbackResponse = (message: string): string => {
+    const lowerMessage = message.toLowerCase();
+    
+    if (lowerMessage.includes('coffee') || lowerMessage.includes('buna')) {
+      return 'Ethiopian coffee (Buna) is more than just a drink - it\'s a ceremony and cultural experience! The coffee ceremony, called "Jebena Buna," involves roasting green beans, grinding them, and brewing in a traditional clay pot called Jebena. It\'s served in three rounds: Abol (first), Tona (second), and Bereka (third, blessing). Would you like to know more?';
+    } else if (lowerMessage.includes('ceremony') || lowerMessage.includes('jebena')) {
+      return 'The Ethiopian coffee ceremony is a beautiful ritual! It includes:\n\n1) Roasting green coffee beans over charcoal\n2) Grinding with a mortar and pestle\n3) Brewing in a Jebena (clay pot)\n4) Serving three rounds - Abol, Tona, Bereka\n\nThe ceremony often includes burning incense (etan) and serving popcorn. It can last 2-3 hours!';
+    } else if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('selam')) {
+      return 'Selam! ☕️ Welcome to Buna Chat! I\'m here to help you with Ethiopian coffee culture or app questions. What would you like to know?';
+    } else if (lowerMessage.includes('app') || lowerMessage.includes('help') || lowerMessage.includes('how')) {
+      return 'Buna Chat helps you connect over Ethiopian coffee culture!\n\n• Home: See posts and news\n• Buna Rooms: Join discussion groups\n• Chat: Message others\n• Study Buna: Learn coffee culture\n• Profile: Customize your account\n\nTap "Nu Buna Tetu" to invite friends!';
+    } else if (lowerMessage.includes('history') || lowerMessage.includes('origin')) {
+      return 'Ethiopia is the birthplace of coffee! Legend says a goat herder named Kaldi discovered coffee around 850 AD when his goats became energetic after eating red berries. The monks used the berries to stay awake during prayers, and coffee spread from there to the world!';
+    } else if (lowerMessage.includes('abol') || lowerMessage.includes('tona') || lowerMessage.includes('bereka')) {
+      return 'In the Ethiopian coffee ceremony, coffee is served in three rounds:\n\n☕ **Abol** (First round) - The strongest and most important\n☕ **Tona** (Second round) - Slightly weaker\n☕ **Bereka** (Third round) - The blessing round, lightest\n\nIt\'s considered impolite to leave before drinking all three cups!';
+    } else {
+      return 'That\'s a great question! I specialize in Ethiopian coffee culture and helping you use Buna Chat. I can help with:\n\n• Coffee ceremony traditions\n• Ethiopian coffee history\n• Using Buna Chat features\n• Coffee bean varieties\n• Ethiopian culture\n\nWhat would you like to explore?';
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -46,14 +66,13 @@ const AbolAssistPage = () => {
 
       if (error) throw error;
 
-      const assistantMessage = data?.message || "I'm having trouble responding. Please try again!";
+      const assistantMessage = data?.message || getFallbackResponse(userMessage);
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
     } catch (err) {
       console.error('Abol Assist error:', err);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'Selam! ☕️ I had a small issue processing that. Could you try again?' 
-      }]);
+      // Use fallback response when edge function fails
+      const fallbackResponse = getFallbackResponse(userMessage);
+      setMessages(prev => [...prev, { role: 'assistant', content: fallbackResponse }]);
     } finally {
       setLoading(false);
     }
@@ -111,12 +130,9 @@ const AbolAssistPage = () => {
         
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-muted px-4 py-3 rounded-2xl rounded-bl-sm">
-              <div className="loading-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
+            <div className="bg-muted px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-2">
+              <RefreshCw size={16} className="animate-spin text-primary" />
+              <span className="text-sm text-muted-foreground">Thinking...</span>
             </div>
           </div>
         )}

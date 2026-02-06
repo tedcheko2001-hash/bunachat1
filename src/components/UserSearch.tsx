@@ -44,7 +44,8 @@ const UserSearch = ({ onClose }: UserSearchProps) => {
   }, [query]);
 
   const handleSelectUser = (userId: string) => {
-    navigate(`/profile/${userId}`);
+    // Navigate to chat for now (can be expanded to user profile later)
+    navigate('/chat');
     onClose?.();
   };
 
