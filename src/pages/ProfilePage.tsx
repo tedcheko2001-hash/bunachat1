@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { 
   ArrowLeft, Camera, Settings, Bell, Shield, 
-  Bot, LogOut, Mail, ChevronRight, Moon, Globe, Edit2, Check, X
+  Bot, LogOut, Mail, ChevronRight, Moon, Globe, Edit2, Check, X, Info
 } from 'lucide-react';
 
 interface Profile {
@@ -24,6 +24,7 @@ const ProfilePage = () => {
   const [uploading, setUploading] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
+  const [showAbout, setShowAbout] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -44,7 +45,6 @@ const ProfilePage = () => {
       setProfile(data);
       setNewName(data.name);
     } else if (!data) {
-      // Create profile if doesn't exist
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
         .insert({
@@ -138,6 +138,11 @@ const ProfilePage = () => {
       label: 'Abol Assist', 
       onClick: () => navigate('/assistant'),
       highlight: true
+    },
+    { 
+      icon: Info, 
+      label: 'About Buna Chat', 
+      onClick: () => setShowAbout(true)
     },
   ];
 
@@ -278,6 +283,53 @@ const ProfilePage = () => {
           {t('signOut', language)}
         </Button>
       </div>
+
+      {/* About Modal */}
+      {showAbout && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-card w-full max-w-md rounded-3xl p-6 slide-up">
+            <div className="text-center mb-6">
+              <span className="text-5xl">☕️</span>
+              <h2 className="text-2xl font-bold mt-4 font-script text-primary">Buna Chat</h2>
+              <p className="text-muted-foreground mt-2">Version 1.0.0</p>
+            </div>
+            
+            <div className="space-y-4 text-sm">
+              <p>
+                <strong>Buna Chat</strong> is a social platform inspired by the rich Ethiopian coffee culture. 
+                The name "Buna" (ቡና) means coffee in Amharic, and this app brings the warmth 
+                and community spirit of the Ethiopian coffee ceremony to the digital world.
+              </p>
+              
+              <p>
+                <strong>Features:</strong>
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <li>Connect with friends through posts and comments</li>
+                <li>Join Buna Rooms for group discussions</li>
+                <li>Learn about Ethiopian coffee culture with Study Buna</li>
+                <li>Get help from Abol Assist, your AI coffee guide</li>
+                <li>Stay updated with Ethiopian news and opportunities</li>
+              </ul>
+              
+              <p className="text-muted-foreground">
+                "Nu Buna Tetu!" - Come drink coffee with us! ☕️
+              </p>
+              
+              <p className="text-center text-muted-foreground pt-4">
+                from <span className="text-buna-red font-bold">TED</span>
+              </p>
+            </div>
+            
+            <Button
+              className="w-full mt-6"
+              onClick={() => setShowAbout(false)}
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
 
       <BottomNav />
     </div>

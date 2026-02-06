@@ -217,6 +217,23 @@ const HomePage = () => {
         ))}
       </div>
 
+      {/* Global Chat Quick Access */}
+      <button 
+        onClick={() => navigate('/chat')}
+        className="mx-4 mt-6 buna-card p-4 flex items-center justify-between w-full hover:bg-muted/50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+            <MessageCircle size={24} className="text-primary" />
+          </div>
+          <div className="text-left">
+            <span className="font-semibold block">Global Chat</span>
+            <span className="text-sm text-muted-foreground">Join the conversation</span>
+          </div>
+        </div>
+        <ChevronRight size={24} className="text-muted-foreground" />
+      </button>
+
       {/* Post Button */}
       <div className="mx-4 mt-6">
         <button
