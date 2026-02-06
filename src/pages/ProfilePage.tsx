@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { 
   ArrowLeft, Camera, Settings, Bell, Shield, 
-  Bot, LogOut, Mail, ChevronRight, Moon, Globe 
+  Bot, LogOut, Mail, ChevronRight, Moon, Globe, Edit2, Check, X
 } from 'lucide-react';
 
 interface Profile {
@@ -22,6 +22,8 @@ const ProfilePage = () => {
   const { user, language, darkMode, setDarkMode, setLanguage, signOut } = useApp();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -36,10 +38,44 @@ const ProfilePage = () => {
       .from('profiles')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!error && data) {
       setProfile(data);
+      setNewName(data.name);
+    } else if (!data) {
+      // Create profile if doesn't exist
+      const { data: newProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: user.id,
+          name: user.email?.split('@')[0] || 'User',
+          email: user.email,
+        })
+        .select()
+        .single();
+      
+      if (!createError && newProfile) {
+        setProfile(newProfile);
+        setNewName(newProfile.name);
+      }
+    }
+  };
+
+  const handleUpdateName = async () => {
+    if (!user || !newName.trim()) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ name: newName.trim() })
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast.error('Failed to update name');
+    } else {
+      toast.success('Name updated!');
+      setEditingName(false);
+      fetchProfile();
     }
   };
 
@@ -50,7 +86,7 @@ const ProfilePage = () => {
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `avatar-${user.id}-${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
@@ -141,7 +177,42 @@ const ProfilePage = () => {
           </div>
 
           <div className="flex-1">
-            <h2 className="text-xl font-semibold">{profile?.name || 'User'}</h2>
+            {editingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className="input-buna py-1 px-2 text-lg font-semibold"
+                  autoFocus
+                />
+                <button 
+                  onClick={handleUpdateName}
+                  className="p-1 text-primary hover:bg-primary/10 rounded"
+                >
+                  <Check size={20} />
+                </button>
+                <button 
+                  onClick={() => {
+                    setEditingName(false);
+                    setNewName(profile?.name || '');
+                  }}
+                  className="p-1 text-muted-foreground hover:bg-muted rounded"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-semibold">{profile?.name || 'User'}</h2>
+                <button 
+                  onClick={() => setEditingName(true)}
+                  className="p-1 text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Edit2 size={16} />
+                </button>
+              </div>
+            )}
             <div className="flex items-center gap-2 text-muted-foreground mt-1">
               <Mail size={14} />
               <span className="text-sm">••••••@••••.•••</span>

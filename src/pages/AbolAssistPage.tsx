@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Bot, User } from 'lucide-react';
+import { useApp } from '@/contexts/AppContext';
+import { supabase } from '@/integrations/supabase/client';
+import { ArrowLeft, Send, Bot } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 
 interface Message {
@@ -10,6 +12,7 @@ interface Message {
 
 const AbolAssistPage = () => {
   const navigate = useNavigate();
+  const { user } = useApp();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -29,37 +32,29 @@ const AbolAssistPage = () => {
 
     const userMessage = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    
+    const newMessages: Message[] = [...messages, { role: 'user', content: userMessage }];
+    setMessages(newMessages);
     setLoading(true);
 
     try {
-      // Simple AI response simulation based on keywords
-      let response = '';
-      const lowerInput = userMessage.toLowerCase();
+      const { data, error } = await supabase.functions.invoke('abol-assist', {
+        body: { 
+          messages: newMessages.map(m => ({ role: m.role, content: m.content }))
+        }
+      });
 
-      if (lowerInput.includes('coffee') || lowerInput.includes('buna')) {
-        response = 'Ethiopian coffee (Buna) is more than just a drink - it\'s a ceremony and cultural experience! The coffee ceremony, called "Jebena Buna," involves roasting green beans, grinding them, and brewing in a traditional clay pot called Jebena. It\'s served in three rounds: Abol (first), Tona (second), and Bereka (third, blessing). Would you like to know more about any specific aspect?';
-      } else if (lowerInput.includes('ceremony') || lowerInput.includes('jebena')) {
-        response = 'The Ethiopian coffee ceremony is a beautiful ritual! It includes: 1) Roasting green coffee beans over charcoal, 2) Grinding with a mortar and pestle, 3) Brewing in a Jebena (clay pot), 4) Serving three rounds - Abol, Tona, Bereka. The ceremony often includes burning incense (etan) and serving popcorn or snacks. It can last 2-3 hours and is a time for community bonding!';
-      } else if (lowerInput.includes('hello') || lowerInput.includes('hi') || lowerInput.includes('selam')) {
-        response = 'Selam! ☕️ Welcome to Buna Chat! I\'m here to help you with anything related to Ethiopian coffee culture or how to use this app. What would you like to know?';
-      } else if (lowerInput.includes('app') || lowerInput.includes('use') || lowerInput.includes('how')) {
-        response = 'Buna Chat helps you connect with others over Ethiopian coffee culture! Here\'s what you can do:\n\n• Home: See posts and news\n• Buna Rooms: Join or create coffee discussion groups\n• Chat: Message other users\n• News: Stay updated on Ethiopian news\n• Study Buna: Learn about coffee culture\n\nTap "Nu Buna Tetu" to invite friends!';
-      } else if (lowerInput.includes('history') || lowerInput.includes('origin')) {
-        response = 'Ethiopia is the birthplace of coffee! Legend says a goat herder named Kaldi discovered coffee around 850 AD when he noticed his goats became energetic after eating red berries. The monks at a nearby monastery used the berries to stay awake during prayers, and coffee spread from there to Yemen and eventually the world!';
-      } else {
-        response = 'That\'s a great question! While I specialize in Ethiopian coffee culture, I\'d be happy to help. Could you tell me more about what you\'d like to know? I can help with:\n\n• Coffee ceremony traditions\n• Ethiopian coffee history\n• Using Buna Chat features\n• Coffee bean varieties\n• Buna etiquette';
-      }
+      if (error) throw error;
 
-      setTimeout(() => {
-        setMessages(prev => [...prev, { role: 'assistant', content: response }]);
-        setLoading(false);
-      }, 1000);
+      const assistantMessage = data?.message || "I'm having trouble responding. Please try again!";
+      setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
     } catch (err) {
+      console.error('Abol Assist error:', err);
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: 'Sorry, I had trouble processing that. Please try again!' 
+        content: 'Selam! ☕️ I had a small issue processing that. Could you try again?' 
       }]);
+    } finally {
       setLoading(false);
     }
   };
@@ -74,7 +69,7 @@ const AbolAssistPage = () => {
   return (
     <div className="page-container bg-background flex flex-col h-screen">
       {/* Header */}
-      <header className="buna-header px-4 py-3 flex items-center gap-3">
+      <header className="buna-header px-4 py-3 flex items-center gap-3 shrink-0">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2">
           <ArrowLeft size={24} />
         </button>
@@ -129,8 +124,8 @@ const AbolAssistPage = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="p-4 pb-24 bg-card border-t border-border">
+      {/* Input - Fixed above bottom nav */}
+      <div className="p-4 pb-24 bg-card border-t border-border shrink-0">
         <div className="flex items-center gap-3">
           <input
             type="text"
@@ -139,6 +134,7 @@ const AbolAssistPage = () => {
             onKeyPress={handleKeyPress}
             placeholder="Ask Abol Assist..."
             className="input-buna flex-1"
+            disabled={loading}
           />
           <button
             onClick={handleSend}
