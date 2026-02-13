@@ -155,7 +155,7 @@ const HomePage = () => {
   };
 
   const quickActions = [
-    { icon: MessageCircle, label: 'Chat', color: 'bg-primary', onClick: () => navigate('/chat') },
+    { icon: MessageCircle, label: 'Chat', color: 'bg-primary', onClick: () => navigate('/conversations') },
     { icon: Coffee, label: t('bunaRooms', language), color: 'bg-buna-brown', onClick: () => navigate('/rooms') },
     { icon: Newspaper, label: t('news', language), color: 'bg-buna-gold', onClick: () => window.open('https://ethiopianmonitor.com', '_blank') },
     { icon: Briefcase, label: t('opportunities', language), color: 'bg-accent', onClick: () => window.open('https://ethiojobs.net/jobs', '_blank') },
@@ -219,7 +219,7 @@ const HomePage = () => {
 
       {/* Global Chat Quick Access */}
       <button 
-        onClick={() => navigate('/chat')}
+        onClick={() => navigate('/conversations')}
         className="mx-4 mt-6 buna-card p-4 flex items-center justify-between w-full hover:bg-muted/50 transition-colors"
       >
         <div className="flex items-center gap-3">
@@ -340,8 +340,8 @@ const HomePage = () => {
 
       {/* Post Modal */}
       {showPostModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
-          <div className="bg-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 slide-up">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-end sm:items-center justify-center">
+          <div className="bg-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 slide-up max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Create Post</h3>
               <button onClick={() => setShowPostModal(false)}>
@@ -392,7 +392,7 @@ const HomePage = () => {
         </div>
       )}
 
-      <BottomNav />
+      {!showPostModal && <BottomNav />}
     </div>
   );
 };

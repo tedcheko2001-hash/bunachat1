@@ -10,7 +10,10 @@ import LoadingPage from "./pages/LoadingPage";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import ChatPage from "./pages/ChatPage";
+import ConversationsPage from "./pages/ConversationsPage";
+import DirectMessagePage from "./pages/DirectMessagePage";
 import BunaRoomsPage from "./pages/BunaRoomsPage";
+import RoomChatPage from "./pages/RoomChatPage";
 import NewsPage from "./pages/NewsPage";
 import OpportunitiesPage from "./pages/OpportunitiesPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -55,7 +58,10 @@ const AppRoutes = () => {
       {/* Protected Routes */}
       <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
       <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+      <Route path="/conversations" element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
+      <Route path="/dm/:userId" element={<ProtectedRoute><DirectMessagePage /></ProtectedRoute>} />
       <Route path="/rooms" element={<ProtectedRoute><BunaRoomsPage /></ProtectedRoute>} />
+      <Route path="/room/:roomId" element={<ProtectedRoute><RoomChatPage /></ProtectedRoute>} />
       <Route path="/news" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
       <Route path="/opportunities" element={<ProtectedRoute><OpportunitiesPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

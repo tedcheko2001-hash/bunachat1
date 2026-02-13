@@ -11,9 +11,10 @@ interface Profile {
 
 interface UserSearchProps {
   onClose?: () => void;
+  onSelectUser?: (userId: string) => void;
 }
 
-const UserSearch = ({ onClose }: UserSearchProps) => {
+const UserSearch = ({ onClose, onSelectUser }: UserSearchProps) => {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Profile[]>([]);
@@ -44,8 +45,11 @@ const UserSearch = ({ onClose }: UserSearchProps) => {
   }, [query]);
 
   const handleSelectUser = (userId: string) => {
-    // Navigate to chat for now (can be expanded to user profile later)
-    navigate('/chat');
+    if (onSelectUser) {
+      onSelectUser(userId);
+    } else {
+      navigate('/chat');
+    }
     onClose?.();
   };
 
@@ -72,11 +76,7 @@ const UserSearch = ({ onClose }: UserSearchProps) => {
 
       {loading && (
         <div className="flex justify-center py-4">
-          <div className="loading-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
+          <div className="loading-dots"><span></span><span></span><span></span></div>
         </div>
       )}
 
