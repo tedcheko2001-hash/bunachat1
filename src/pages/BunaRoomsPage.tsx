@@ -146,20 +146,25 @@ const BunaRoomsPage = () => {
               key={room.id}
               className="buna-card p-4 flex items-center gap-4"
             >
-              <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center overflow-hidden">
-                {room.image_url ? (
-                  <img src={room.image_url} alt={room.name} className="w-full h-full object-cover" />
-                ) : (
-                  <Users size={28} className="text-primary" />
-                )}
-              </div>
-              
-              <div className="flex-1">
-                <h3 className="font-semibold">{room.name}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {room.room_members.length} members
-                </p>
-              </div>
+              <button
+                onClick={() => navigate(`/room/${room.id}`)}
+                className="flex items-center gap-4 flex-1"
+              >
+                <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center overflow-hidden">
+                  {room.image_url ? (
+                    <img src={room.image_url} alt={room.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Users size={28} className="text-primary" />
+                  )}
+                </div>
+                
+                <div className="text-left">
+                  <h3 className="font-semibold">{room.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {room.room_members.length} members
+                  </p>
+                </div>
+              </button>
 
               <Button
                 size="sm"
@@ -177,8 +182,8 @@ const BunaRoomsPage = () => {
 
       {/* Create Room Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
-          <div className="bg-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 slide-up">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-end sm:items-center justify-center">
+          <div className="bg-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 slide-up max-h-[85vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">{t('createRoom', language)}</h3>
             
             <div className="space-y-4">
