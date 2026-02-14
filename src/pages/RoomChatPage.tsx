@@ -61,7 +61,7 @@ const RoomChatPage = () => {
           });
           // Fetch profile for new sender if needed
           if (!profiles[msg.sender_id]) {
-            supabase.from('profiles').select('user_id, name, avatar_url')
+            (supabase as any).from('profiles_public').select('user_id, name, avatar_url')
               .eq('user_id', msg.sender_id).single()
               .then(({ data }) => {
                 if (data) setProfiles(prev => ({ ...prev, [data.user_id]: data }));
@@ -97,8 +97,8 @@ const RoomChatPage = () => {
       setMessages(data);
       const userIds = [...new Set(data.map(m => m.sender_id))];
       if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from('profiles')
+        const { data: profilesData } = await (supabase as any)
+          .from('profiles_public')
           .select('user_id, name, avatar_url')
           .in('user_id', userIds);
         if (profilesData) {
@@ -119,8 +119,8 @@ const RoomChatPage = () => {
 
     if (memberData) {
       const userIds = memberData.map(m => m.user_id);
-      const { data: profilesData } = await supabase
-        .from('profiles')
+      const { data: profilesData } = await (supabase as any)
+        .from('profiles_public')
         .select('user_id, name, avatar_url')
         .in('user_id', userIds);
       if (profilesData) setMembers(profilesData);
@@ -138,20 +138,19 @@ const RoomChatPage = () => {
         content: newMessage.trim(),
       });
 
-      // Notify all members except sender
+      // Notify all members except sender via RPC
       const { data: myProfile } = await supabase
         .from('profiles').select('name').eq('user_id', user.id).single();
 
       const otherMembers = members.filter(m => m.user_id !== user.id);
-      if (otherMembers.length > 0) {
-        const notifications = otherMembers.map(m => ({
-          user_id: m.user_id,
-          type: 'group_message',
-          title: `${myProfile?.name || 'Someone'} in ${room?.name || 'group'}`,
-          body: newMessage.trim().substring(0, 100),
-          reference_id: roomId,
-        }));
-        await supabase.from('notifications').insert(notifications);
+      for (const m of otherMembers) {
+        await supabase.rpc('create_room_notification', {
+          p_user_id: m.user_id,
+          p_type: 'group_message',
+          p_title: `${myProfile?.name || 'Someone'} in ${room?.name || 'group'}`,
+          p_body: newMessage.trim().substring(0, 100),
+          p_reference_id: roomId,
+        });
       }
 
       setNewMessage('');
@@ -165,8 +164,8 @@ const RoomChatPage = () => {
   const handleAddUser = async () => {
     if (!addUsername.trim() || !roomId || !user) return;
 
-    const { data: profile } = await supabase
-      .from('profiles')
+    const { data: profile } = await (supabase as any)
+      .from('profiles_public')
       .select('user_id, name')
       .ilike('name', addUsername.trim())
       .single();
@@ -197,13 +196,13 @@ const RoomChatPage = () => {
     if (error) {
       toast.error('Failed to add user');
     } else {
-      // Notify the added user
-      await supabase.from('notifications').insert({
-        user_id: profile.user_id,
-        type: 'group_join',
-        title: `You were added to ${room?.name || 'a group'}`,
-        body: `Added by ${user.id}`,
-        reference_id: roomId,
+      // Notify the added user via RPC
+      await supabase.rpc('create_room_notification', {
+        p_user_id: profile.user_id,
+        p_type: 'group_join',
+        p_title: `You were added to ${room?.name || 'a group'}`,
+        p_body: `Welcome to the group!`,
+        p_reference_id: roomId,
       });
 
       toast.success(`${profile.name} added!`);

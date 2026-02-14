@@ -62,8 +62,8 @@ const DirectMessagePage = () => {
 
   const fetchProfile = async () => {
     if (!userId) return;
-    const { data } = await supabase
-      .from('profiles')
+    const { data } = await (supabase as any)
+      .from('profiles_public')
       .select('name, avatar_url')
       .eq('user_id', userId)
       .single();
@@ -118,19 +118,17 @@ const DirectMessagePage = () => {
         .update({ updated_at: new Date().toISOString() })
         .or(`and(user1_id.eq.${ids[0]},user2_id.eq.${ids[1]})`);
 
-      // Create notification for receiver
+      // Create notification for receiver via RPC
       const { data: myProfile } = await supabase
         .from('profiles')
         .select('name')
         .eq('user_id', user.id)
         .single();
 
-      await supabase.from('notifications').insert({
-        user_id: userId,
-        type: 'dm',
-        title: `New message from ${myProfile?.name || 'Someone'}`,
-        body: newMessage.trim().substring(0, 100),
-        reference_id: undefined,
+      await supabase.rpc('create_dm_notification', {
+        p_receiver_id: userId,
+        p_sender_name: myProfile?.name || 'Someone',
+        p_message_preview: newMessage.trim(),
       });
 
       setNewMessage('');

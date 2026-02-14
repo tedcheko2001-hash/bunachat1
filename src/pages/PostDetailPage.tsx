@@ -85,8 +85,8 @@ const PostDetailPage = () => {
       setPost(data);
       
       // Fetch profile separately
-      const { data: profileData } = await supabase
-        .from('profiles')
+      const { data: profileData } = await (supabase as any)
+        .from('profiles_public')
         .select('name, avatar_url')
         .eq('user_id', data.user_id)
         .single();
@@ -110,8 +110,8 @@ const PostDetailPage = () => {
       
       // Fetch profiles for commenters
       const userIds = [...new Set(data.map(c => c.user_id))];
-      const { data: profilesData } = await supabase
-        .from('profiles')
+      const { data: profilesData } = await (supabase as any)
+        .from('profiles_public')
         .select('user_id, name, avatar_url')
         .in('user_id', userIds);
       

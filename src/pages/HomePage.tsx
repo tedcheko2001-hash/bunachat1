@@ -68,8 +68,8 @@ const HomePage = () => {
       
       const userIds = [...new Set(data.map(p => p.user_id))];
       if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from('profiles')
+        const { data: profilesData } = await (supabase as any)
+          .from('profiles_public')
           .select('user_id, name, avatar_url')
           .in('user_id', userIds);
         
