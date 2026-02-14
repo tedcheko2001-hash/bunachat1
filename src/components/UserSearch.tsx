@@ -28,14 +28,14 @@ const UserSearch = ({ onClose, onSelectUser }: UserSearchProps) => {
       }
 
       setLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
+      const { data, error } = await (supabase as any)
+        .from('profiles_public')
         .select('user_id, name, avatar_url')
         .ilike('name', `%${query}%`)
         .limit(10);
 
       if (!error && data) {
-        setResults(data);
+        setResults(data as Profile[]);
       }
       setLoading(false);
     };

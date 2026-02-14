@@ -60,8 +60,8 @@ const ConversationsPage = () => {
 
     const otherUserIds = convos.map(c => c.user1_id === user.id ? c.user2_id : c.user1_id);
     
-    const { data: profiles } = await supabase
-      .from('profiles')
+    const { data: profiles } = await (supabase as any)
+      .from('profiles_public')
       .select('user_id, name, avatar_url')
       .in('user_id', otherUserIds);
 
