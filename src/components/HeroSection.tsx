@@ -44,7 +44,6 @@ const HeroSection = () => {
       <div className="absolute bottom-4 left-4 text-white z-10">
         <h2 className="text-2xl font-bold drop-shadow-lg">{t('nuBunaTetu', language)} ☕️</h2>
         <p className="text-white/90 drop-shadow-md">{t('comeDrinkCoffee', language)}</p>
-        <p className="text-white/80 text-sm drop-shadow-md">{t('goodMorning', language)}</p>
       </div>
     </div>
   );
