@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Send, Users, UserPlus, X } from 'lucide-react';
+import { ArrowLeft, Send, Users, UserPlus, X, Trash2, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Message {
@@ -221,6 +221,19 @@ const RoomChatPage = () => {
 
   const isAdmin = room?.created_by === user?.id;
 
+  const handleLeaveRoom = async () => {
+    if (!user || !roomId) return;
+    await supabase.from('room_members').delete().eq('room_id', roomId).eq('user_id', user.id);
+    toast.success('You left the group');
+    navigate('/rooms');
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    await supabase.from('messages').delete().eq('id', messageId);
+    setMessages(prev => prev.filter(m => m.id !== messageId));
+    toast.success('Message deleted');
+  };
+
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
@@ -235,9 +248,12 @@ const RoomChatPage = () => {
         <button onClick={() => setShowMembers(!showMembers)} className="p-2">
           <Users size={22} />
         </button>
-        {isAdmin && (
-          <button onClick={() => setShowAddUser(true)} className="p-2">
-            <UserPlus size={22} />
+        <button onClick={() => setShowAddUser(true)} className="p-2">
+          <UserPlus size={22} />
+        </button>
+        {!isAdmin && (
+          <button onClick={handleLeaveRoom} className="p-2 text-destructive">
+            <LogOut size={22} />
           </button>
         )}
       </header>
@@ -312,9 +328,9 @@ const RoomChatPage = () => {
             return (
               <div
                 key={message.id}
-                className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${isMe ? 'justify-end' : 'justify-start'} group`}
               >
-                <div className={`max-w-[75%] ${isMe ? '' : 'flex gap-2'}`}>
+                <div className={`max-w-[75%] ${isMe ? '' : 'flex gap-2'} relative`}>
                   {!isMe && (
                     <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-1">
                       <span className="text-primary text-xs font-bold">
@@ -341,6 +357,14 @@ const RoomChatPage = () => {
                       {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
+                  {isMe && (
+                    <button
+                      onClick={() => handleDeleteMessage(message.id)}
+                      className="absolute -top-2 -right-2 hidden group-hover:flex w-6 h-6 bg-destructive text-destructive-foreground rounded-full items-center justify-center"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
                 </div>
               </div>
             );
