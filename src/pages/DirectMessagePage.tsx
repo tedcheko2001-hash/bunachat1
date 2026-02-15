@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Send, User } from 'lucide-react';
+import { ArrowLeft, Send, User, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Message {
   id: string;
@@ -174,27 +175,44 @@ const DirectMessagePage = () => {
             <p className="text-sm">Say hello!</p>
           </div>
         ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
-            >
+          messages.map((message) => {
+            const isMe = message.sender_id === user?.id;
+            return (
               <div
-                className={`max-w-[75%] px-4 py-2 rounded-2xl ${
-                  message.sender_id === user?.id
-                    ? 'bg-primary text-primary-foreground rounded-br-sm'
-                    : 'bg-muted text-foreground rounded-bl-sm'
-                }`}
+                key={message.id}
+                className={`flex ${isMe ? 'justify-end' : 'justify-start'} group`}
               >
-                <p className="text-sm">{message.content}</p>
-                <p className={`text-xs mt-1 ${
-                  message.sender_id === user?.id ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                }`}>
-                  {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </p>
+                <div className={`max-w-[75%] relative`}>
+                  <div
+                    className={`px-4 py-2 rounded-2xl ${
+                      isMe
+                        ? 'bg-primary text-primary-foreground rounded-br-sm'
+                        : 'bg-muted text-foreground rounded-bl-sm'
+                    }`}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                    <p className={`text-xs mt-1 ${
+                      isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                    }`}>
+                      {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  {isMe && (
+                    <button
+                      onClick={async () => {
+                        await supabase.from('messages').delete().eq('id', message.id);
+                        setMessages(prev => prev.filter(m => m.id !== message.id));
+                        toast.success('Message deleted');
+                      }}
+                      className="absolute -top-2 -right-2 hidden group-hover:flex w-6 h-6 bg-destructive text-destructive-foreground rounded-full items-center justify-center"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>

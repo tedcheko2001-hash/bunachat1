@@ -75,10 +75,6 @@ const LoadingPage = () => {
         </div>
       )}
 
-      {/* "from TED" branding */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 text-lg font-medium z-10" style={{ color: 'hsl(0 0% 30%)' }}>
-        from <span className="font-bold" style={{ color: 'hsl(0, 75%, 50%)' }}>TED</span>
-      </div>
     </div>
   );
 };
