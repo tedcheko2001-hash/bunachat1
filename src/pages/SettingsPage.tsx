@@ -1,15 +1,22 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp, t } from '@/contexts/AppContext';
 import BottomNav from '@/components/BottomNav';
-import { ArrowLeft, Moon, Globe, Bell, Shield, Info, ChevronRight } from 'lucide-react';
+import {
+  ArrowLeft, Sun, Moon, Monitor, Globe, Bell, Shield, Info, ChevronRight,
+} from 'lucide-react';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const { language, darkMode, setDarkMode, setLanguage } = useApp();
+  const { language, themeMode, setThemeMode, setLanguage } = useApp();
+
+  const themeOptions = [
+    { value: 'light' as const, icon: Sun, label: 'Light' },
+    { value: 'dark' as const, icon: Moon, label: 'Dark' },
+    { value: 'system' as const, icon: Monitor, label: 'System Default' },
+  ];
 
   return (
     <div className="page-container bg-background">
-      {/* Header */}
       <header className="buna-header px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2">
           <ArrowLeft size={24} />
@@ -22,18 +29,25 @@ const SettingsPage = () => {
         <div>
           <h3 className="text-sm font-medium text-muted-foreground mb-2 px-1">Appearance</h3>
           <div className="buna-card overflow-hidden">
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Moon size={20} className="text-muted-foreground" />
-                <span className="font-medium">{t('darkMode', language)}</span>
-              </div>
-              <div className={`w-12 h-6 rounded-full transition-colors ${darkMode ? 'bg-primary' : 'bg-muted'}`}>
-                <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${darkMode ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
-              </div>
-            </button>
+            {themeOptions.map(({ value, icon: Icon, label }, idx) => (
+              <button
+                key={value}
+                onClick={() => setThemeMode(value)}
+                className={`w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors ${
+                  idx > 0 ? 'border-t border-border' : ''
+                } ${themeMode === value ? 'bg-primary/5' : ''}`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon size={20} className="text-muted-foreground" />
+                  <span className="font-medium">{label}</span>
+                </div>
+                {themeMode === value && (
+                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full" />
+                  </div>
+                )}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -55,7 +69,7 @@ const SettingsPage = () => {
                 </div>
               )}
             </button>
-            
+
             <button
               onClick={() => setLanguage('am')}
               className={`w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-t border-border ${language === 'am' ? 'bg-primary/5' : ''}`}
@@ -87,7 +101,7 @@ const SettingsPage = () => {
               </div>
               <ChevronRight size={20} className="text-muted-foreground" />
             </button>
-            
+
             <button
               onClick={() => navigate('/privacy')}
               className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-t border-border"
@@ -98,7 +112,7 @@ const SettingsPage = () => {
               </div>
               <ChevronRight size={20} className="text-muted-foreground" />
             </button>
-            
+
             <button
               className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-t border-border"
             >
@@ -111,8 +125,8 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground pt-4">
-          from <span className="text-buna-red font-bold">TED</span>
+        <p className="text-center text-sm pt-4">
+          from <span className="brand-gradient-text">Teds Online Company</span>
         </p>
       </div>
 

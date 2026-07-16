@@ -75,6 +75,14 @@ const LoadingPage = () => {
         </div>
       )}
 
+      {/* Branding footer overlay — covers baked-in text on splash image */}
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20">
+        <div className="px-5 py-2 rounded-full bg-white/90 backdrop-blur-sm shadow-sm">
+          <span className="text-sm">
+            from <span className="brand-gradient-text">Teds Online Company</span>
+          </span>
+        </div>
+      </div>
     </div>
   );
 };
