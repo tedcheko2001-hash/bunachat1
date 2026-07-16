@@ -234,8 +234,8 @@ const AuthPage = () => {
           </form>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          from <span className="text-buna-red font-bold">TED</span>
+        <p className="text-center text-sm mt-6">
+          from <span className="brand-gradient-text">Teds Online Company</span>
         </p>
       </div>
     </div>

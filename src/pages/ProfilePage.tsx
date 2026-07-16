@@ -316,8 +316,8 @@ const ProfilePage = () => {
                 "Nu Buna Tetu!" - Come drink coffee with us! ☕️
               </p>
               
-              <p className="text-center text-muted-foreground pt-4">
-                from <span className="text-buna-red font-bold">TED</span>
+              <p className="text-center pt-4">
+                from <span className="brand-gradient-text">Teds Online Company</span>
               </p>
             </div>
             

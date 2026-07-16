@@ -6,117 +6,130 @@
 
 @layer base {
   :root {
-    /* Buna Chat Design System - Ethiopian Coffee Inspired */
-    --background: 40 30% 96%;
-    --foreground: 30 40% 15%;
+    /* Buna Chat — Light Theme (exact spec) */
+    --background: 0 0% 100%;              /* #FFFFFF */
+    --secondary-background: 60 8% 97%;    /* #F8F8F6 */
+    --foreground: 0 0% 13%;               /* #222222 */
 
-    --card: 40 35% 98%;
-    --card-foreground: 30 40% 15%;
+    --card: 0 0% 100%;                    /* #FFFFFF */
+    --card-foreground: 0 0% 13%;
 
-    --popover: 40 35% 98%;
-    --popover-foreground: 30 40% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
 
-    /* Coffee green - primary brand color */
-    --primary: 100 45% 40%;
+    /* Ethiopian coffee palette */
+    --primary: 123 46% 34%;               /* #2E7D32 Primary green */
     --primary-foreground: 0 0% 100%;
 
-    /* Warm cream secondary */
-    --secondary: 40 40% 92%;
-    --secondary-foreground: 30 40% 20%;
+    --secondary: 60 8% 97%;               /* soft off-white */
+    --secondary-foreground: 0 0% 13%;
 
-    /* Coffee brown accent */
-    --accent: 30 50% 30%;
+    --accent: 25 33% 33%;                 /* #6F4E37 coffee brown */
     --accent-foreground: 0 0% 100%;
 
-    /* Muted tones */
-    --muted: 40 20% 90%;
-    --muted-foreground: 30 15% 45%;
+    --muted: 60 8% 95%;
+    --muted-foreground: 0 0% 40%;         /* #666666 */
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 30% 85%;
-    --input: 40 30% 88%;
-    --ring: 100 45% 40%;
+    --border: 0 0% 90%;
+    --input: 0 0% 96%;
+    --ring: 123 46% 34%;
 
     --radius: 1rem;
 
-    /* Custom Buna colors */
-    --buna-green: 100 45% 40%;
-    --buna-green-light: 100 50% 85%;
-    --buna-brown: 30 50% 30%;
-    --buna-brown-light: 30 40% 50%;
-    --buna-cream: 40 35% 96%;
-    --buna-gold: 45 80% 50%;
+    /* Buna palette tokens */
+    --buna-green: 123 46% 34%;            /* #2E7D32 */
+    --buna-brown: 25 33% 33%;             /* #6F4E37 */
+    --buna-brown-light: 25 20% 45%;
+    --buna-cream: 45 100% 95%;            /* #FFF8E7 */
+    --buna-gold: 44 84% 46%;              /* #D4A017 */
     --buna-red: 0 75% 50%;
 
+    /* Verified badge — Buna Sini brown gradient */
+    --verified-badge-start: 24 45% 30%;
+    --verified-badge-end: 20 55% 22%;
+
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(100, 50%, 45%), hsl(100, 45%, 35%));
-    --gradient-hero: linear-gradient(180deg, hsl(100, 50%, 45%) 0%, hsl(100, 45%, 35%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(40, 35%, 98%) 0%, hsl(40, 30%, 94%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(123 46% 40%), hsl(123 46% 28%));
+    --gradient-hero: linear-gradient(180deg, hsl(123 46% 34%) 0%, hsl(25 33% 33%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(60 8% 97%) 100%);
+    --gradient-brand: linear-gradient(90deg, #2563eb 0%, #16a34a 100%);
 
-    /* Shadows */
-    --shadow-sm: 0 2px 8px hsl(30 30% 20% / 0.08);
-    --shadow-md: 0 4px 16px hsl(30 30% 20% / 0.12);
-    --shadow-lg: 0 8px 32px hsl(30 30% 20% / 0.16);
+    /* Shadows — soft in light mode */
+    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.06);
+    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.08);
+    --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.10);
 
-    --sidebar-background: 40 30% 96%;
-    --sidebar-foreground: 30 40% 15%;
-    --sidebar-primary: 100 45% 40%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 13%;
+    --sidebar-primary: 123 46% 34%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 40% 92%;
-    --sidebar-accent-foreground: 30 40% 20%;
-    --sidebar-border: 40 30% 85%;
-    --sidebar-ring: 100 45% 40%;
+    --sidebar-accent: 60 8% 97%;
+    --sidebar-accent-foreground: 0 0% 13%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 123 46% 34%;
   }
 
   .dark {
-    --background: 30 30% 8%;
-    --foreground: 40 30% 95%;
+    /* Buna Chat — Dark Theme (exact spec) */
+    --background: 0 0% 7%;                /* #121212 */
+    --secondary-background: 0 0% 12%;     /* #1E1E1E */
+    --foreground: 0 0% 100%;              /* #FFFFFF */
 
-    --card: 30 25% 12%;
-    --card-foreground: 40 30% 95%;
+    --card: 0 0% 15%;                     /* #252525 */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 30 25% 12%;
-    --popover-foreground: 40 30% 95%;
+    --popover: 0 0% 15%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 100 50% 50%;
-    --primary-foreground: 30 30% 8%;
+    --primary: 122 39% 49%;               /* #4CAF50 */
+    --primary-foreground: 0 0% 10%;
 
-    --secondary: 30 20% 18%;
-    --secondary-foreground: 40 30% 90%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
 
-    --accent: 30 40% 40%;
-    --accent-foreground: 40 30% 95%;
+    --accent: 16 15% 47%;                 /* #8D6E63 */
+    --accent-foreground: 0 0% 100%;
 
-    --muted: 30 20% 18%;
-    --muted-foreground: 40 15% 60%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 81%;         /* #CFCFCF */
 
-    --destructive: 0 62% 45%;
+    --destructive: 0 62% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 20% 20%;
-    --input: 30 20% 18%;
-    --ring: 100 50% 50%;
+    --border: 0 0% 20%;                   /* #333333 */
+    --input: 0 0% 18%;
+    --ring: 122 39% 49%;
 
-    --buna-green: 100 50% 50%;
-    --buna-green-light: 100 30% 25%;
-    --buna-brown: 30 40% 45%;
-    --buna-brown-light: 30 30% 35%;
-    --buna-cream: 30 25% 12%;
+    --buna-green: 122 39% 49%;
+    --buna-brown: 16 15% 47%;
+    --buna-brown-light: 16 15% 55%;
+    --buna-cream: 30 15% 18%;
+    --buna-gold: 45 97% 58%;              /* #FBC02D */
+    --buna-red: 0 75% 55%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(100, 55%, 50%), hsl(100, 50%, 40%));
-    --gradient-hero: linear-gradient(180deg, hsl(100, 55%, 50%) 0%, hsl(100, 50%, 40%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(30, 25%, 14%) 0%, hsl(30, 20%, 10%) 100%);
+    --verified-badge-start: 24 45% 45%;
+    --verified-badge-end: 20 55% 35%;
 
-    --sidebar-background: 30 30% 8%;
-    --sidebar-foreground: 40 30% 95%;
-    --sidebar-primary: 100 50% 50%;
-    --sidebar-primary-foreground: 30 30% 8%;
-    --sidebar-accent: 30 20% 18%;
-    --sidebar-accent-foreground: 40 30% 90%;
-    --sidebar-border: 30 20% 20%;
-    --sidebar-ring: 100 50% 50%;
+    --gradient-primary: linear-gradient(135deg, hsl(122 39% 55%), hsl(122 39% 42%));
+    --gradient-hero: linear-gradient(180deg, hsl(122 39% 45%) 0%, hsl(16 15% 40%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 15%) 0%, hsl(0 0% 12%) 100%);
+    --gradient-brand: linear-gradient(90deg, #3b82f6 0%, #22c55e 100%);
+
+    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.4);
+    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.5);
+    --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.6);
+
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 122 39% 49%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 122 39% 49%;
   }
 }
 
@@ -125,9 +138,15 @@
     @apply border-border;
   }
 
+  html {
+    /* Smooth theme transitions 200–300ms */
+    transition: background-color 250ms ease, color 250ms ease;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Poppins', sans-serif;
+    transition: background-color 250ms ease, color 250ms ease;
   }
 
   .font-script {
@@ -137,8 +156,9 @@
 
 @layer components {
   .buna-card {
-    @apply bg-card rounded-2xl shadow-md border border-border/50;
-    background: var(--gradient-card);
+    @apply bg-card rounded-2xl border border-border/50;
+    box-shadow: var(--shadow-sm);
+    transition: background-color 250ms ease, box-shadow 250ms ease, border-color 250ms ease;
   }
 
   .buna-button {
@@ -149,12 +169,37 @@
   .buna-header {
     background: var(--gradient-hero);
     @apply text-primary-foreground;
+    transition: background 250ms ease;
+  }
+
+  .brand-gradient-text {
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+
+  /* Buna Sini verified badge */
+  .verified-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, hsl(var(--verified-badge-start)), hsl(var(--verified-badge-end)));
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.15);
+    color: #ffffff;
+    flex-shrink: 0;
   }
 
   .bottom-nav {
     @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border
            flex justify-around items-center py-2 px-4 z-50;
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    transition: background-color 250ms ease, border-color 250ms ease;
   }
 
   .nav-item {
@@ -177,12 +222,30 @@
 
   .page-container {
     @apply min-h-screen pb-24;
+    background-color: hsl(var(--background));
+    transition: background-color 250ms ease;
   }
 
   .input-buna {
-    @apply w-full px-4 py-3 rounded-xl bg-input border border-border
+    @apply w-full px-4 py-3 rounded-xl bg-input border border-border text-foreground
            focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
            transition-all duration-200;
+  }
+
+  /* Story ring — gradient border */
+  .story-ring {
+    background: conic-gradient(from 180deg,
+      hsl(var(--buna-green)),
+      hsl(var(--buna-gold)),
+      hsl(var(--buna-brown)),
+      hsl(var(--buna-green)));
+    padding: 2px;
+    border-radius: 9999px;
+  }
+  .story-ring-seen {
+    background: hsl(var(--border));
+    padding: 2px;
+    border-radius: 9999px;
   }
 
   .loading-dots {
@@ -198,27 +261,23 @@
   }
 
   .loading-dots span:nth-child(1) {
-    background: hsl(100, 50%, 45%);
+    background: hsl(var(--buna-green));
     animation-delay: -0.32s;
   }
 
   .loading-dots span:nth-child(2) {
-    background: hsl(45, 80%, 50%);
+    background: hsl(var(--buna-gold));
     animation-delay: -0.16s;
   }
 
   .loading-dots span:nth-child(3) {
-    background: hsl(0, 75%, 50%);
+    background: hsl(var(--buna-red));
     animation-delay: 0;
   }
 
   @keyframes bounce {
-    0%, 80%, 100% {
-      transform: scale(0);
-    }
-    40% {
-      transform: scale(1);
-    }
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
   }
 
   .steam-animation {
@@ -226,61 +285,35 @@
   }
 
   @keyframes steam {
-    0%, 100% {
-      opacity: 0.3;
-      transform: translateY(0);
-    }
-    50% {
-      opacity: 0.8;
-      transform: translateY(-10px);
-    }
+    0%, 100% { opacity: 0.3; transform: translateY(0); }
+    50% { opacity: 0.8; transform: translateY(-10px); }
   }
 
-  .fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
-  }
-
+  .fade-in { animation: fadeIn 0.5s ease-out forwards; }
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
-  .slide-up {
-    animation: slideUp 0.4s ease-out forwards;
-  }
-
+  .slide-up { animation: slideUp 0.4s ease-out forwards; }
   @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(100%); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .badge-pop { animation: badgePop 0.3s ease-out; }
+  @keyframes badgePop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
   }
 }
 
 /* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: hsl(var(--muted)); }
+::-webkit-scrollbar-thumb { background: hsl(var(--primary) / 0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary) / 0.5); }
 
-::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-}
-
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.3);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.5);
-}
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { scrollbar-width: none; }

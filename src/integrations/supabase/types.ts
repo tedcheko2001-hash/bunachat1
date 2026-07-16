@@ -111,23 +111,47 @@ export type Database = {
         }
         Relationships: []
       }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       likes: {
         Row: {
           created_at: string
           id: string
           post_id: string
+          reaction_type: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           post_id: string
+          reaction_type?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           post_id?: string
+          reaction_type?: string
           user_id?: string
         }
         Relationships: [
@@ -214,24 +238,30 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          image_urls: string[] | null
           updated_at: string
           user_id: string
+          visibility: string
         }
         Insert: {
           content: string
           created_at?: string
           id?: string
           image_url?: string | null
+          image_urls?: string[] | null
           updated_at?: string
           user_id: string
+          visibility?: string
         }
         Update: {
           content?: string
           created_at?: string
           id?: string
           image_url?: string | null
+          image_urls?: string[] | null
           updated_at?: string
           user_id?: string
+          visibility?: string
         }
         Relationships: [
           {
@@ -308,6 +338,68 @@ export type Database = {
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "buna_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stories: {
+        Row: {
+          caption: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          media_type: string
+          media_url: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          user_id?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
+      story_views: {
+        Row: {
+          id: string
+          story_id: string
+          viewed_at: string
+          viewer_id: string
+        }
+        Insert: {
+          id?: string
+          story_id: string
+          viewed_at?: string
+          viewer_id: string
+        }
+        Update: {
+          id?: string
+          story_id?: string
+          viewed_at?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
             referencedColumns: ["id"]
           },
         ]
