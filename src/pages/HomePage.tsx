@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
   MessageCircle, Coffee, Newspaper, Briefcase,
-  Link2, ChevronRight, Plus, Image as ImageIcon, MessageSquare, Search, X,
+  ChevronRight, Plus, Image as ImageIcon, MessageSquare, Search, X,
   Globe, Users, Lock,
 } from 'lucide-react';
 
@@ -91,12 +91,8 @@ const HomePage = () => {
     }
   };
 
-  const generateInviteLink = () => {
-    const inviteCode = Math.random().toString(36).substring(2, 10);
-    const link = `${window.location.origin}/invite/${inviteCode}`;
-    void navigator.clipboard.writeText(link);
-    toast.success('Invite link copied to clipboard!');
-  };
+
+
 
   const handleAddPostImages = (files: FileList | null) => {
     if (!files) return;
@@ -223,16 +219,8 @@ const HomePage = () => {
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Generate Invite */}
-      <div className="mx-4 mt-4">
-        <Button
-          onClick={generateInviteLink}
-          className="w-full py-4 rounded-xl flex items-center justify-center gap-2"
-        >
-          <Link2 size={20} />
-          {t('generateInvite', language)}
-        </Button>
-      </div>
+
+
 
       {/* Quick Actions */}
       <div className="grid grid-cols-4 gap-3 mx-4 mt-6">

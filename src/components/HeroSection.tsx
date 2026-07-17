@@ -22,7 +22,7 @@ const HeroSection = () => {
         <img 
           src={homeHero} 
           alt="Buna Chat Hero" 
-          className={`relative w-full h-48 object-cover object-left transition-opacity duration-500 ${
+          className={`relative w-full h-48 object-cover object-center transition-opacity duration-500 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           onLoad={() => setImageLoaded(true)}
