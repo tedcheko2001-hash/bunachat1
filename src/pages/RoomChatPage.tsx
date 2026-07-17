@@ -225,7 +225,7 @@ const RoomChatPage = () => {
     }
   };
 
-  const isAdmin = room?.created_by === user?.id;
+  const isAdmin = !!adminUserId && adminUserId === user?.id;
 
   const handleLeaveRoom = async () => {
     if (!user || !roomId) return;
@@ -282,7 +282,7 @@ const RoomChatPage = () => {
                   )}
                 </div>
                 <span className="text-sm font-medium">{m.name}</span>
-                {room?.created_by === m.user_id && (
+                {adminUserId === m.user_id && (
                   <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">Admin</span>
                 )}
               </div>

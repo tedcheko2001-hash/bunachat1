@@ -11,9 +11,8 @@ interface Room {
   id: string;
   name: string;
   image_url: string | null;
-  created_by: string;
   created_at: string;
-  room_members: { id: string }[];
+  member_count: number;
 }
 
 const BunaRoomsPage = () => {
@@ -32,15 +31,18 @@ const BunaRoomsPage = () => {
   const fetchRooms = async () => {
     const { data, error } = await supabase
       .from('buna_rooms')
-      .select(`
-        *,
-        room_members (id)
-      `)
+      .select('id, name, image_url, created_at')
       .order('created_at', { ascending: false });
 
-    if (!error && data) {
-      setRooms(data as Room[]);
-    }
+    if (error || !data) return;
+
+    const { data: counts } = await (supabase as any).rpc('room_member_counts');
+    const countMap = new Map<string, number>();
+    (counts || []).forEach((row: { room_id: string; member_count: number }) => {
+      countMap.set(row.room_id, row.member_count);
+    });
+
+    setRooms(data.map((r) => ({ ...r, member_count: countMap.get(r.id) ?? 0 })));
   };
 
   const handleCreateRoom = async () => {
@@ -161,7 +163,7 @@ const BunaRoomsPage = () => {
                 <div className="text-left">
                   <h3 className="font-semibold">{room.name}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {room.room_members.length} members
+                    {room.member_count} members
                   </p>
                 </div>
               </button>
