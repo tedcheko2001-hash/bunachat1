@@ -22,7 +22,6 @@ interface Room {
   id: string;
   name: string;
   image_url: string | null;
-  created_by: string;
 }
 
 const RoomChatPage = () => {
@@ -30,6 +29,7 @@ const RoomChatPage = () => {
   const navigate = useNavigate();
   const { user } = useApp();
   const [room, setRoom] = useState<Room | null>(null);
+  const [adminUserId, setAdminUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [members, setMembers] = useState<Profile[]>([]);
@@ -80,8 +80,14 @@ const RoomChatPage = () => {
 
   const fetchRoom = async () => {
     if (!roomId) return;
-    const { data } = await supabase.from('buna_rooms').select('*').eq('id', roomId).single();
+    const { data } = await supabase
+      .from('buna_rooms')
+      .select('id, name, image_url')
+      .eq('id', roomId)
+      .single();
     if (data) setRoom(data);
+    const { data: adminId } = await (supabase as any).rpc('get_room_admin', { _room: roomId });
+    if (adminId) setAdminUserId(adminId as string);
   };
 
   const fetchMessages = async () => {
@@ -219,7 +225,7 @@ const RoomChatPage = () => {
     }
   };
 
-  const isAdmin = room?.created_by === user?.id;
+  const isAdmin = !!adminUserId && adminUserId === user?.id;
 
   const handleLeaveRoom = async () => {
     if (!user || !roomId) return;
@@ -276,7 +282,7 @@ const RoomChatPage = () => {
                   )}
                 </div>
                 <span className="text-sm font-medium">{m.name}</span>
-                {room?.created_by === m.user_id && (
+                {adminUserId === m.user_id && (
                   <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">Admin</span>
                 )}
               </div>
