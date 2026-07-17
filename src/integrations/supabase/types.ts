@@ -498,6 +498,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string
@@ -527,25 +548,19 @@ export type Database = {
       }
       user_visits: {
         Row: {
-          email: string | null
           id: string
-          ip_address: string | null
           user_agent: string | null
           user_id: string | null
           visited_at: string
         }
         Insert: {
-          email?: string | null
           id?: string
-          ip_address?: string | null
           user_agent?: string | null
           user_id?: string | null
           visited_at?: string
         }
         Update: {
-          email?: string | null
           id?: string
-          ip_address?: string | null
           user_agent?: string | null
           user_id?: string | null
           visited_at?: string
@@ -604,9 +619,28 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_room_admin: { Args: { _room: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_room_member: {
+        Args: { _room: string; _user: string }
+        Returns: boolean
+      }
+      room_member_counts: {
+        Args: never
+        Returns: {
+          member_count: number
+          room_id: string
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -733,6 +767,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
