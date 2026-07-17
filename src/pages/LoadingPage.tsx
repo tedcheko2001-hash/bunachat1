@@ -14,7 +14,6 @@ const LoadingPage = () => {
       if (session?.user) {
         await supabase.from('user_visits').insert({
           user_id: session.user.id,
-          email: session.user.email || null,
           user_agent: navigator.userAgent,
         });
       }
