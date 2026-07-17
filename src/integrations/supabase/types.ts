@@ -38,32 +38,77 @@ export type Database = {
         }
         Relationships: []
       }
+      comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           comment_order: number
           content: string
           created_at: string
+          edited_at: string | null
           id: string
+          parent_id: string | null
           post_id: string
+          updated_at: string
           user_id: string
         }
         Insert: {
           comment_order?: number
           content: string
           created_at?: string
+          edited_at?: string | null
           id?: string
+          parent_id?: string | null
           post_id: string
+          updated_at?: string
           user_id: string
         }
         Update: {
           comment_order?: number
           content?: string
           created_at?: string
+          edited_at?: string | null
           id?: string
+          parent_id?: string | null
           post_id?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "comments_post_id_fkey"
             columns: ["post_id"]
@@ -287,6 +332,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          is_verified: boolean
           name: string
           updated_at: string
           user_id: string
@@ -297,6 +343,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          is_verified?: boolean
           name: string
           updated_at?: string
           user_id: string
@@ -307,6 +354,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          is_verified?: boolean
           name?: string
           updated_at?: string
           user_id?: string
@@ -567,6 +615,48 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_requests: {
+        Row: {
+          created_at: string
+          id: string
+          id_document_path: string
+          legal_name: string
+          review_notes: string | null
+          reviewer_id: string | null
+          selfie_path: string
+          status: Database["public"]["Enums"]["verification_status"]
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          id_document_path: string
+          legal_name: string
+          review_notes?: string | null
+          reviewer_id?: string | null
+          selfie_path: string
+          status?: Database["public"]["Enums"]["verification_status"]
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          id_document_path?: string
+          legal_name?: string
+          review_notes?: string | null
+          reviewer_id?: string | null
+          selfie_path?: string
+          status?: Database["public"]["Enums"]["verification_status"]
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       profiles_public: {
@@ -575,6 +665,7 @@ export type Database = {
           bio: string | null
           created_at: string | null
           id: string | null
+          is_verified: boolean | null
           name: string | null
           updated_at: string | null
           user_id: string | null
@@ -584,6 +675,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id?: string | null
+          is_verified?: boolean | null
           name?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -593,6 +685,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id?: string | null
+          is_verified?: boolean | null
           name?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -641,6 +734,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      verification_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -769,6 +863,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      verification_status: ["pending", "approved", "rejected"],
     },
   },
 } as const
