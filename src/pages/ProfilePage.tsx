@@ -5,16 +5,18 @@ import { supabase } from '@/integrations/supabase/client';
 import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { 
-  ArrowLeft, Camera, Settings, Bell, Shield, 
-  Bot, LogOut, Mail, ChevronRight, Moon, Globe, Edit2, Check, X, Info
+import {
+  ArrowLeft, Camera, Settings, Bell, Shield,
+  Bot, LogOut, Mail, ChevronRight, Moon, Globe, Edit2, Check, X, Info, BadgeCheck,
 } from 'lucide-react';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 interface Profile {
   name: string;
   email: string | null;
   avatar_url: string | null;
   bio: string | null;
+  is_verified: boolean;
 }
 
 const ProfilePage = () => {
@@ -118,32 +120,12 @@ const ProfilePage = () => {
   };
 
   const menuItems = [
-    { 
-      icon: Bell, 
-      label: 'Notifications', 
-      onClick: () => navigate('/notifications') 
-    },
-    { 
-      icon: Settings, 
-      label: t('settings', language), 
-      onClick: () => navigate('/settings') 
-    },
-    { 
-      icon: Shield, 
-      label: 'Privacy', 
-      onClick: () => navigate('/privacy') 
-    },
-    { 
-      icon: Bot, 
-      label: 'Abol Assist', 
-      onClick: () => navigate('/assistant'),
-      highlight: true
-    },
-    { 
-      icon: Info, 
-      label: 'About Buna Chat', 
-      onClick: () => setShowAbout(true)
-    },
+    { icon: BadgeCheck, label: profile?.is_verified ? 'Buna Sini Verified' : 'Get Verified', onClick: () => navigate('/verify'), highlight: true },
+    { icon: Bell, label: 'Notifications', onClick: () => navigate('/notifications') },
+    { icon: Settings, label: t('settings', language), onClick: () => navigate('/settings') },
+    { icon: Shield, label: 'Privacy', onClick: () => navigate('/privacy') },
+    { icon: Bot, label: 'Abol Assist', onClick: () => navigate('/assistant') },
+    { icon: Info, label: 'About Buna Chat', onClick: () => setShowAbout(true) },
   ];
 
   return (
@@ -210,7 +192,8 @@ const ProfilePage = () => {
             ) : (
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-semibold">{profile?.name || 'User'}</h2>
-                <button 
+                {profile?.is_verified && <VerifiedBadge size={18} />}
+                <button
                   onClick={() => setEditingName(true)}
                   className="p-1 text-muted-foreground hover:text-primary transition-colors"
                 >
