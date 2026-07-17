@@ -70,7 +70,7 @@ const AppRoutes = () => {
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/privacy" element={<ProtectedRoute><PrivacyPage /></ProtectedRoute>} />
       <Route path="/post/:id" element={<ProtectedRoute><PostDetailPage /></ProtectedRoute>} />
-      <Route path="/invite/:code" element={<AuthPage />} />
+      
       
       <Route path="*" element={<NotFound />} />
     </Routes>
