@@ -22,6 +22,9 @@ import SettingsPage from "./pages/SettingsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import PostDetailPage from "./pages/PostDetailPage";
+import PublicProfilePage from "./pages/PublicProfilePage";
+import VerificationRequestPage from "./pages/VerificationRequestPage";
+import AdminVerificationsPage from "./pages/AdminVerificationsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,8 +73,11 @@ const AppRoutes = () => {
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/privacy" element={<ProtectedRoute><PrivacyPage /></ProtectedRoute>} />
       <Route path="/post/:id" element={<ProtectedRoute><PostDetailPage /></ProtectedRoute>} />
-      
-      
+      <Route path="/u/:userId" element={<ProtectedRoute><PublicProfilePage /></ProtectedRoute>} />
+      <Route path="/verify" element={<ProtectedRoute><VerificationRequestPage /></ProtectedRoute>} />
+      <Route path="/admin/verifications" element={<ProtectedRoute><AdminVerificationsPage /></ProtectedRoute>} />
+
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

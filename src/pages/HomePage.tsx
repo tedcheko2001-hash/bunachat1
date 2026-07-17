@@ -12,6 +12,7 @@ import StoryViewer from '@/components/StoryViewer';
 import ReactionPicker, { REACTIONS, ReactionType, getReaction } from '@/components/ReactionPicker';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import {
   MessageCircle, Coffee, Newspaper, Briefcase,
   ChevronRight, Plus, Image as ImageIcon, MessageSquare, Search, X,
@@ -38,7 +39,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { user, language } = useApp();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [profiles, setProfiles] = useState<Record<string, { name: string; avatar_url: string | null }>>({});
+  const [profiles, setProfiles] = useState<Record<string, { name: string; avatar_url: string | null; is_verified?: boolean }>>({});
   const [showPostModal, setShowPostModal] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [postContent, setPostContent] = useState('');
@@ -80,11 +81,11 @@ const HomePage = () => {
       if (userIds.length > 0) {
         const { data: profilesData } = await (supabase as any)
           .from('profiles_public')
-          .select('user_id, name, avatar_url')
+          .select('user_id, name, avatar_url, is_verified')
           .in('user_id', userIds);
         if (profilesData) {
-          const map: Record<string, { name: string; avatar_url: string | null }> = {};
-          profilesData.forEach((p: any) => { map[p.user_id] = { name: p.name, avatar_url: p.avatar_url }; });
+          const map: Record<string, { name: string; avatar_url: string | null; is_verified?: boolean }> = {};
+          profilesData.forEach((p: any) => { map[p.user_id] = { name: p.name, avatar_url: p.avatar_url, is_verified: p.is_verified }; });
           setProfiles(map);
         }
       }
@@ -319,7 +320,13 @@ const HomePage = () => {
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-sm">{profile?.name || 'User'}</p>
+                    <button
+                      onClick={() => profile && user && (post.user_id === user.id ? navigate('/profile') : navigate(`/u/${post.user_id}`))}
+                      className="flex items-center gap-1.5 hover:underline"
+                    >
+                      <p className="font-medium text-sm">{profile?.name || 'User'}</p>
+                      {profile?.is_verified && <VerifiedBadge size={14} />}
+                    </button>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       {new Date(post.created_at).toLocaleDateString()}
                       <span className="inline-flex items-center gap-1">
