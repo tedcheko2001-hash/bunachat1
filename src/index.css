@@ -307,6 +307,24 @@
     60% { transform: scale(1.2); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
   }
+
+  /* Splash loading dots (green / yellow / red) */
+  .loading-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 9999px;
+    animation: splashBounce 1.2s infinite ease-in-out both;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  }
+  .loading-dot-green  { background: hsl(140, 70%, 35%); animation-delay: -0.32s; }
+  .loading-dot-yellow { background: hsl(45, 90%, 55%);  animation-delay: -0.16s; }
+  .loading-dot-red    { background: hsl(0, 75%, 50%);   animation-delay: 0s; }
+
+  @keyframes splashBounce {
+    0%, 80%, 100% { transform: translateY(0) scale(0.85); opacity: 0.6; }
+    40%           { transform: translateY(-8px) scale(1.1); opacity: 1; }
+  }
 }
 
 /* Scrollbar styling */
