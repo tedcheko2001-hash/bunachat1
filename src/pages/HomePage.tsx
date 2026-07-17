@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
   MessageCircle, Coffee, Newspaper, Briefcase,
-  Link2, ChevronRight, Plus, Image as ImageIcon, MessageSquare, Search, X,
+  ChevronRight, Plus, Image as ImageIcon, MessageSquare, Search, X,
   Globe, Users, Lock,
 } from 'lucide-react';
 
