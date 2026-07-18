@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import loadingSplash from '@/assets/loading-splash.png';
+import loadingSplashAsset from '@/assets/loading-splash-new.png.asset.json';
 import { supabase } from '@/integrations/supabase/client';
 
 const LoadingPage = () => {
@@ -44,7 +44,7 @@ const LoadingPage = () => {
     >
       {/* Splash image */}
       <img
-        src={loadingSplash}
+        src={loadingSplashAsset.url}
         alt="Buna Chat splash"
         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
           imageLoaded ? 'opacity-100' : 'opacity-0'
