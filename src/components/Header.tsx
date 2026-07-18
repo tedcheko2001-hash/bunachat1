@@ -1,6 +1,6 @@
 import { Bell, Users, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import bunaChatLogo from '@/assets/bunachat-logo.png';
+import bunaChatLogoAsset from '@/assets/bunachat-logo.jpg.asset.json';
 
 interface HeaderProps {
   showNotifications?: boolean;
@@ -13,7 +13,7 @@ const Header = ({ showNotifications = true, showSettings = false }: HeaderProps)
   return (
     <header className="buna-header px-4 py-3 flex items-center justify-between rounded-b-3xl">
       <div className="flex items-center gap-2">
-        <img src={bunaChatLogo} alt="Buna Chat" className="w-10 h-10 rounded-xl" />
+        <img src={bunaChatLogoAsset.url} alt="Buna Chat" className="w-10 h-10 rounded-xl" />
         <span className="font-script text-2xl">Buna chat</span>
       </div>
       

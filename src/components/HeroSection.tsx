@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp, t } from '@/contexts/AppContext';
-import homeHero from '@/assets/home-hero.png';
+import homeHeroAsset from '@/assets/home-hero.jpg.asset.json';
 
 const HeroSection = () => {
   const { language } = useApp();
@@ -20,7 +20,7 @@ const HeroSection = () => {
       {/* Hero image - overlays gradient when loaded */}
       {!imageError && (
         <img 
-          src={homeHero} 
+          src={homeHeroAsset.url} 
           alt="Buna Chat Hero" 
           className={`relative w-full h-48 object-cover object-center transition-opacity duration-500 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
