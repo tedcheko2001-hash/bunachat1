@@ -5,7 +5,7 @@ import { useApp, t } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Coffee } from 'lucide-react';
-import bunaChatLogo from '@/assets/bunachat-logo.png';
+import bunaChatLogoAsset from '@/assets/bunachat-logo.jpg.asset.json';
 import { z } from 'zod';
 
 const loginSchema = z.object({
