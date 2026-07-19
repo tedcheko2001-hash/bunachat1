@@ -49,22 +49,24 @@ const NotificationsPage = () => {
     setLoading(false);
   };
 
-  const markAsRead = async (id: string) => {
-    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+  const deleteNotification = async (id: string) => {
+    await supabase.from('notifications').delete().eq('id', id);
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   const markAllRead = async () => {
     if (!user) return;
-    await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id).eq('is_read', false);
+    await supabase.from('notifications').delete().eq('user_id', user.id);
+    setNotifications([]);
   };
 
   const handleClick = (n: Notification) => {
-    markAsRead(n.id);
+    deleteNotification(n.id);
     if (n.type === 'dm' && n.reference_id) {
       navigate(`/dm/${n.reference_id}`);
     } else if ((n.type === 'group_message' || n.type === 'group_join') && n.reference_id) {
       navigate(`/room/${n.reference_id}`);
-    } else if ((n.type === 'like' || n.type === 'comment') && n.reference_id) {
+    } else if ((n.type === 'like' || n.type === 'comment' || n.type === 'story_reply') && n.reference_id) {
       navigate(`/post/${n.reference_id}`);
     }
   };
