@@ -40,6 +40,26 @@ const RoomChatPage = () => {
   const [addUsername, setAddUsername] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Ceremonies
+  interface Ceremony {
+    id: string;
+    room_id: string;
+    host_id: string;
+    title: string;
+    description: string | null;
+    scheduled_at: string;
+    is_live: boolean;
+    started_at: string | null;
+    ended_at: string | null;
+  }
+  const [ceremonies, setCeremonies] = useState<Ceremony[]>([]);
+  const [showCeremonyModal, setShowCeremonyModal] = useState(false);
+  const [ceremonyTitle, setCeremonyTitle] = useState('');
+  const [ceremonyDesc, setCeremonyDesc] = useState('');
+  const [ceremonyWhen, setCeremonyWhen] = useState('');
+  const [activeCeremony, setActiveCeremony] = useState<Ceremony | null>(null);
+  const [ceremonyParticipants, setCeremonyParticipants] = useState<Profile[]>([]);
+
   useEffect(() => {
     if (roomId && user) {
       fetchRoom();
