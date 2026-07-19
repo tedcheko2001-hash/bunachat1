@@ -1,4 +1,4 @@
-import { Bell, Users, Settings } from 'lucide-react';
+import { Bell, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import bunaChatLogoAsset from '@/assets/bunachat-logo.jpg.asset.json';
 
@@ -25,12 +25,6 @@ const Header = ({ showNotifications = true, showSettings = false }: HeaderProps)
               className="p-2 rounded-full hover:bg-primary-foreground/10 transition-colors"
             >
               <Bell size={22} />
-            </button>
-            <button 
-              onClick={() => navigate('/chat')}
-              className="p-2 rounded-full hover:bg-primary-foreground/10 transition-colors"
-            >
-              <Users size={22} />
             </button>
           </>
         )}

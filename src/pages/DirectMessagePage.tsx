@@ -32,6 +32,13 @@ const DirectMessagePage = () => {
       fetchProfile();
       fetchMessages();
       ensureConversation();
+      // Auto-delete DM notifications from this sender when the chat is opened
+      supabase.from('notifications')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('type', 'dm')
+        .eq('reference_id', userId)
+        .then(() => {});
 
       const channel = supabase
         .channel(`dm-${userId}`)
