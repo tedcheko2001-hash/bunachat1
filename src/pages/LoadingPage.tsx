@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import loadingSplashAsset from '@/assets/loading-splash-new.png.asset.json';
+import loadingSplashAsset from '@/assets/loading-splash-v3.png.asset.json';
 import { supabase } from '@/integrations/supabase/client';
 
 const LoadingPage = () => {
