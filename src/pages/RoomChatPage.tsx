@@ -65,6 +65,7 @@ const RoomChatPage = () => {
       fetchRoom();
       fetchMessages();
       fetchMembers();
+      fetchCeremonies();
       // Auto-delete room notifications for this room when opened
       supabase.from('notifications')
         .delete()
