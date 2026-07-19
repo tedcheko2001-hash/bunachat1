@@ -9,6 +9,7 @@ import UserSearch from '@/components/UserSearch';
 import StoriesBar from '@/components/StoriesBar';
 import StoryCreator from '@/components/StoryCreator';
 import StoryViewer from '@/components/StoryViewer';
+import BunaBuddies from '@/components/BunaBuddies';
 import ReactionPicker, { REACTIONS, ReactionType, getReaction } from '@/components/ReactionPicker';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -178,11 +179,8 @@ const HomePage = () => {
     { icon: Briefcase, label: t('opportunities', language), color: 'bg-accent', onClick: () => navigate('/opportunities') },
   ];
 
-  const latestNews = [
-    { title: 'Ethiopia Hosts African Union Summit 2026', source: 'Ethiopian Monitor' },
-    { title: 'New Coffee Export Records Set', source: 'Business Ethiopia' },
-    { title: 'Tech Hub Opens in Addis Ababa', source: 'Tech Africa' },
-  ];
+
+
 
   const visibilityIcon = (v: string) => {
     if (v === 'friends') return <Users size={12} />;
@@ -237,23 +235,6 @@ const HomePage = () => {
         ))}
       </div>
 
-      {/* Global Chat Quick Access */}
-      <button
-        onClick={() => navigate('/conversations')}
-        className="mx-4 mt-6 buna-card p-4 flex items-center justify-between w-full hover:bg-muted/50 transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-            <MessageCircle size={24} className="text-primary" />
-          </div>
-          <div className="text-left">
-            <span className="font-semibold block">Global Chat</span>
-            <span className="text-sm text-muted-foreground">Join the conversation</span>
-          </div>
-        </div>
-        <ChevronRight size={24} className="text-muted-foreground" />
-      </button>
-
       {/* Post Button */}
       <div className="mx-4 mt-6">
         <button
@@ -280,22 +261,8 @@ const HomePage = () => {
         <ChevronRight size={24} className="text-muted-foreground" />
       </button>
 
-      {/* Latest News */}
-      <div className="mx-4 mt-6">
-        <h3 className="font-semibold mb-3">{t('latestNews', language)}</h3>
-        <div className="space-y-3">
-          {latestNews.map((news, idx) => (
-            <button
-              key={idx}
-              onClick={() => navigate('/news')}
-              className="w-full buna-card p-4 text-left hover:bg-muted/50 transition-colors"
-            >
-              <p className="font-medium text-sm">{news.title}</p>
-              <p className="text-xs text-muted-foreground mt-1">{news.source}</p>
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Buna Buddies - nearby users by location */}
+      <BunaBuddies />
 
       {/* Posts Feed */}
       {posts.length > 0 && (
