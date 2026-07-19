@@ -9,6 +9,7 @@ import UserSearch from '@/components/UserSearch';
 import StoriesBar from '@/components/StoriesBar';
 import StoryCreator from '@/components/StoryCreator';
 import StoryViewer from '@/components/StoryViewer';
+import BunaBuddies from '@/components/BunaBuddies';
 import ReactionPicker, { REACTIONS, ReactionType, getReaction } from '@/components/ReactionPicker';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
