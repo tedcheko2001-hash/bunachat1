@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Send, Users, UserPlus, X, Trash2, LogOut } from 'lucide-react';
+import { ArrowLeft, Send, Users, UserPlus, X, Trash2, LogOut, Calendar, Radio, Play, Square } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Message {
