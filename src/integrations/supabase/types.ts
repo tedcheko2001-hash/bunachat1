@@ -38,6 +38,85 @@ export type Database = {
         }
         Relationships: []
       }
+      ceremonies: {
+        Row: {
+          created_at: string
+          description: string | null
+          ended_at: string | null
+          host_id: string
+          id: string
+          is_live: boolean
+          room_id: string
+          scheduled_at: string
+          started_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          host_id: string
+          id?: string
+          is_live?: boolean
+          room_id: string
+          scheduled_at: string
+          started_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          host_id?: string
+          id?: string
+          is_live?: boolean
+          room_id?: string
+          scheduled_at?: string
+          started_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ceremonies_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "buna_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ceremony_participants: {
+        Row: {
+          ceremony_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          ceremony_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          ceremony_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ceremony_participants_ceremony_id_fkey"
+            columns: ["ceremony_id"]
+            isOneToOne: false
+            referencedRelation: "ceremonies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comment_likes: {
         Row: {
           comment_id: string
