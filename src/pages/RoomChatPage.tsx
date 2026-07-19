@@ -457,8 +457,118 @@ const RoomChatPage = () => {
         </div>
       )}
 
+      {/* Ceremonies bar */}
+      <div className="bg-card/70 border-b border-border px-4 py-2 shrink-0">
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <h3 className="text-sm font-semibold flex items-center gap-1">
+            <Calendar size={14} /> Coffee Ceremonies
+          </h3>
+          <button
+            onClick={() => setShowCeremonyModal(true)}
+            className="text-xs px-3 py-1 rounded-full bg-primary text-primary-foreground font-medium"
+          >
+            + Schedule
+          </button>
+        </div>
+        {ceremonies.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No upcoming ceremonies. Schedule one!</p>
+        ) : (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {ceremonies.map((c) => {
+              const when = new Date(c.scheduled_at);
+              const isHost = c.host_id === user?.id;
+              return (
+                <div key={c.id} className={`min-w-[220px] rounded-xl p-3 border ${c.is_live ? 'border-destructive bg-destructive/10' : 'border-border bg-background'}`}>
+                  <div className="flex items-center gap-1 mb-1">
+                    {c.is_live && <Radio size={12} className="text-destructive animate-pulse" />}
+                    <p className="text-sm font-semibold truncate">{c.title}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {c.is_live ? '🔴 Live now' : when.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                  <div className="flex gap-1">
+                    {c.is_live ? (
+                      isHost ? (
+                        <button onClick={() => handleEndCeremony(c)} className="flex-1 text-xs py-1 rounded-lg bg-destructive text-destructive-foreground flex items-center justify-center gap-1">
+                          <Square size={12} /> End
+                        </button>
+                      ) : (
+                        activeCeremony?.id === c.id ? (
+                          <button onClick={() => handleLeaveLive(c)} className="flex-1 text-xs py-1 rounded-lg border border-border">Leave</button>
+                        ) : (
+                          <button onClick={() => handleJoinLive(c)} className="flex-1 text-xs py-1 rounded-lg bg-primary text-primary-foreground">Join Live</button>
+                        )
+                      )
+                    ) : isHost ? (
+                      <button
+                        onClick={() => handleGoLive(c)}
+                        disabled={!canGoLive(c)}
+                        className="flex-1 text-xs py-1 rounded-lg bg-primary text-primary-foreground flex items-center justify-center gap-1 disabled:opacity-50"
+                      >
+                        <Play size={12} /> Go Live
+                      </button>
+                    ) : (
+                      <span className="flex-1 text-xs py-1 text-center text-muted-foreground">Scheduled</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {activeCeremony && ceremonyParticipants.length > 0 && (
+          <p className="text-xs text-muted-foreground mt-2">
+            🔴 {ceremonyParticipants.length} in the ceremony: {ceremonyParticipants.map(p => p.name).join(', ')}
+          </p>
+        )}
+      </div>
+
+      {/* Schedule Ceremony modal */}
+      {showCeremonyModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <Calendar size={18} /> Schedule a Coffee Ceremony
+            </h3>
+            <input
+              type="text"
+              value={ceremonyTitle}
+              onChange={(e) => setCeremonyTitle(e.target.value)}
+              placeholder="Ceremony title"
+              className="input-buna mb-3"
+            />
+            <textarea
+              value={ceremonyDesc}
+              onChange={(e) => setCeremonyDesc(e.target.value)}
+              placeholder="Description (optional)"
+              rows={2}
+              className="input-buna mb-3"
+            />
+            <label className="text-xs font-medium mb-1 block">Date & time</label>
+            <input
+              type="datetime-local"
+              value={ceremonyWhen}
+              onChange={(e) => setCeremonyWhen(e.target.value)}
+              className="input-buna mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCeremonyModal(false)}
+                className="flex-1 py-2 rounded-xl border border-border font-medium"
+              >Cancel</button>
+              <button
+                onClick={handleCreateCeremony}
+                disabled={!ceremonyTitle.trim() || !ceremonyWhen}
+                className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground font-medium disabled:opacity-50"
+              >Schedule</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
+
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <span className="text-4xl mb-4">☕️</span>
