@@ -179,11 +179,8 @@ const HomePage = () => {
     { icon: Briefcase, label: t('opportunities', language), color: 'bg-accent', onClick: () => navigate('/opportunities') },
   ];
 
-  const latestNews = [
-    { title: 'Ethiopia Hosts African Union Summit 2026', source: 'Ethiopian Monitor' },
-    { title: 'New Coffee Export Records Set', source: 'Business Ethiopia' },
-    { title: 'Tech Hub Opens in Addis Ababa', source: 'Tech Africa' },
-  ];
+
+
 
   const visibilityIcon = (v: string) => {
     if (v === 'friends') return <Users size={12} />;
