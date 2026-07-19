@@ -278,6 +278,106 @@ const RoomChatPage = () => {
     toast.success('Message deleted');
   };
 
+  // ---- Ceremonies ----
+  const fetchCeremonies = async () => {
+    if (!roomId) return;
+    const { data } = await (supabase as any)
+      .from('ceremonies')
+      .select('*')
+      .eq('room_id', roomId)
+      .is('ended_at', null)
+      .order('scheduled_at', { ascending: true });
+    if (data) setCeremonies(data as Ceremony[]);
+  };
+
+  const fetchParticipants = async (ceremonyId: string) => {
+    const { data } = await (supabase as any)
+      .from('ceremony_participants')
+      .select('user_id')
+      .eq('ceremony_id', ceremonyId);
+    if (!data) return;
+    const ids = data.map((d: any) => d.user_id);
+    if (ids.length === 0) { setCeremonyParticipants([]); return; }
+    const { data: profs } = await (supabase as any)
+      .from('profiles_public')
+      .select('user_id, name, avatar_url')
+      .in('user_id', ids);
+    setCeremonyParticipants((profs as Profile[]) || []);
+  };
+
+  const handleCreateCeremony = async () => {
+    if (!user || !roomId || !ceremonyTitle.trim() || !ceremonyWhen) return;
+    const { error } = await (supabase as any).from('ceremonies').insert({
+      room_id: roomId,
+      host_id: user.id,
+      title: ceremonyTitle.trim(),
+      description: ceremonyDesc.trim() || null,
+      scheduled_at: new Date(ceremonyWhen).toISOString(),
+    });
+    if (error) { toast.error('Could not schedule ceremony'); return; }
+    toast.success('Ceremony scheduled ☕️');
+    setCeremonyTitle(''); setCeremonyDesc(''); setCeremonyWhen('');
+    setShowCeremonyModal(false);
+    fetchCeremonies();
+  };
+
+  const handleGoLive = async (c: Ceremony) => {
+    const { error } = await (supabase as any)
+      .from('ceremonies')
+      .update({ is_live: true, started_at: new Date().toISOString() })
+      .eq('id', c.id);
+    if (error) { toast.error('Could not go live'); return; }
+    // Auto-join host as participant
+    await (supabase as any).from('ceremony_participants').insert({ ceremony_id: c.id, user_id: user!.id });
+    toast.success('🔴 You are live!');
+    setActiveCeremony({ ...c, is_live: true });
+    fetchParticipants(c.id);
+
+    // Notify room members
+    const others = members.filter(m => m.user_id !== user!.id);
+    for (const m of others) {
+      await supabase.rpc('create_room_notification', {
+        p_user_id: m.user_id,
+        p_type: 'group_message',
+        p_title: `🔴 Live ceremony in ${room?.name || 'the room'}`,
+        p_body: c.title,
+        p_reference_id: roomId!,
+      });
+    }
+  };
+
+  const handleEndCeremony = async (c: Ceremony) => {
+    await (supabase as any)
+      .from('ceremonies')
+      .update({ is_live: false, ended_at: new Date().toISOString() })
+      .eq('id', c.id);
+    toast.success('Ceremony ended');
+    setActiveCeremony(null);
+    setCeremonyParticipants([]);
+    fetchCeremonies();
+  };
+
+  const handleJoinLive = async (c: Ceremony) => {
+    if (!user) return;
+    await (supabase as any).from('ceremony_participants')
+      .insert({ ceremony_id: c.id, user_id: user.id });
+    setActiveCeremony(c);
+    fetchParticipants(c.id);
+  };
+
+  const handleLeaveLive = async (c: Ceremony) => {
+    if (!user) return;
+    await (supabase as any).from('ceremony_participants')
+      .delete().eq('ceremony_id', c.id).eq('user_id', user.id);
+    setActiveCeremony(null);
+    setCeremonyParticipants([]);
+  };
+
+  const canGoLive = (c: Ceremony) =>
+    c.host_id === user?.id && !c.is_live && new Date(c.scheduled_at).getTime() <= Date.now() + 5 * 60 * 1000;
+
+
+
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
