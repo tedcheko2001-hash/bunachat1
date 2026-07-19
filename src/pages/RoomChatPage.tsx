@@ -98,7 +98,17 @@ const RoomChatPage = () => {
         })
         .subscribe();
 
-      return () => { supabase.removeChannel(channel); };
+      const ceremonyChannel = supabase
+        .channel(`ceremonies-${roomId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'ceremonies', filter: `room_id=eq.${roomId}` }, () => {
+          fetchCeremonies();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+        supabase.removeChannel(ceremonyChannel);
+      };
     }
   }, [roomId, user]);
 
