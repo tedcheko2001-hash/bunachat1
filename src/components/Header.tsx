@@ -1,4 +1,4 @@
-import { Bell, Users, Settings } from 'lucide-react';
+import { Bell, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import bunaChatLogoAsset from '@/assets/bunachat-logo.jpg.asset.json';
 
