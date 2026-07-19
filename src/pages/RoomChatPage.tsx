@@ -45,6 +45,13 @@ const RoomChatPage = () => {
       fetchRoom();
       fetchMessages();
       fetchMembers();
+      // Auto-delete room notifications for this room when opened
+      supabase.from('notifications')
+        .delete()
+        .eq('user_id', user.id)
+        .in('type', ['group_message', 'group_join'])
+        .eq('reference_id', roomId)
+        .then(() => {});
 
       const channel = supabase
         .channel(`room-${roomId}`)
