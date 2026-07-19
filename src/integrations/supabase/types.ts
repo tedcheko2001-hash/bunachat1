@@ -514,6 +514,30 @@ export type Database = {
           },
         ]
       }
+      user_locations: {
+        Row: {
+          accuracy: number | null
+          latitude: number
+          longitude: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          latitude: number
+          longitude: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          latitude?: number
+          longitude?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           completed: boolean
@@ -723,6 +747,17 @@ export type Database = {
       is_room_member: {
         Args: { _room: string; _user: string }
         Returns: boolean
+      }
+      nearby_buddies: {
+        Args: { radius_km?: number }
+        Returns: {
+          avatar_url: string
+          distance_km: number
+          is_verified: boolean
+          name: string
+          updated_at: string
+          user_id: string
+        }[]
       }
       room_member_counts: {
         Args: never
