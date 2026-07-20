@@ -101,41 +101,29 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        {/* Other Settings */}
+        {/* Notification Sound */}
         <div>
-          <h3 className="text-sm font-medium text-muted-foreground mb-2 px-1">Other</h3>
+          <h3 className="text-sm font-medium text-muted-foreground mb-2 px-1">Notification Sound</h3>
           <div className="buna-card overflow-hidden">
-            <button
-              onClick={() => navigate('/notifications')}
-              className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Bell size={20} className="text-muted-foreground" />
-                <span className="font-medium">Notifications</span>
-              </div>
-              <ChevronRight size={20} className="text-muted-foreground" />
-            </button>
-
-            <button
-              onClick={() => navigate('/privacy')}
-              className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-t border-border"
-            >
-              <div className="flex items-center gap-3">
-                <Shield size={20} className="text-muted-foreground" />
-                <span className="font-medium">Privacy</span>
-              </div>
-              <ChevronRight size={20} className="text-muted-foreground" />
-            </button>
-
-            <button
-              className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-t border-border"
-            >
-              <div className="flex items-center gap-3">
-                <Info size={20} className="text-muted-foreground" />
-                <span className="font-medium">About Buna Chat</span>
-              </div>
-              <span className="text-sm text-muted-foreground">v1.0.0</span>
-            </button>
+            {soundOptions.map(({ value, icon: Icon, label }, idx) => (
+              <button
+                key={label}
+                onClick={() => setSoundOn(value)}
+                className={`w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors ${
+                  idx > 0 ? 'border-t border-border' : ''
+                } ${soundOn === value ? 'bg-primary/5' : ''}`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon size={20} className="text-muted-foreground" />
+                  <span className="font-medium">{label}</span>
+                </div>
+                {soundOn === value && (
+                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full" />
+                  </div>
+                )}
+              </button>
+            ))}
           </div>
         </div>
 
