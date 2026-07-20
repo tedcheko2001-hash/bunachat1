@@ -256,6 +256,33 @@ export type Database = {
         }
         Relationships: []
       }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: Database["public"]["Enums"]["friendship_status"]
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       likes: {
         Row: {
           created_at: string
@@ -815,6 +842,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      friend_suggestions: {
+        Args: { _limit?: number }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          is_verified: boolean
+          name: string
+          user_id: string
+        }[]
+      }
       get_room_admin: { Args: { _room: string }; Returns: string }
       has_role: {
         Args: {
@@ -848,6 +885,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      friendship_status: "pending" | "accepted"
       verification_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -977,6 +1015,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      friendship_status: ["pending", "accepted"],
       verification_status: ["pending", "approved", "rejected"],
     },
   },
