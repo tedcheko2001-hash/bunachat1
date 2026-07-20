@@ -1,65 +1,91 @@
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ExternalLink, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp, t } from '@/contexts/AppContext';
 import BottomNav from '@/components/BottomNav';
+import { useMemo, useState } from 'react';
 
-const newsItems = [
+type NewsItem = {
+  title: string;
+  summary: string;
+  source: string;
+  url: string;
+};
+
+const buildTodaysNews = (): NewsItem[] => [
   {
-    title: 'Ethiopia Leads African Coffee Export Growth in 2026',
-    summary: 'Ethiopian coffee exports have increased by 25% this year, making it the top African exporter.',
-    date: '2026-02-06',
-    source: 'Ethiopian Monitor',
-    url: 'https://ethiopianmonitor.com',
+    title: 'Ethiopia Today – Breaking News & Headlines',
+    summary: 'Latest breaking news across Ethiopia updated throughout the day.',
+    source: 'Addis Standard',
+    url: 'https://addisstandard.com/',
   },
   {
-    title: 'New Digital Banking Regulations Announced',
-    summary: 'The National Bank of Ethiopia introduces new guidelines for digital payment systems.',
-    date: '2026-02-05',
-    source: 'Ethiopian Monitor',
-    url: 'https://ethiopianmonitor.com',
+    title: 'Business, Economy & Coffee Market Updates',
+    summary: 'Today\'s coverage of Ethiopian business, banking, and coffee export markets.',
+    source: 'The Reporter Ethiopia',
+    url: 'https://www.thereporterethiopia.com/',
   },
   {
-    title: 'Addis Ababa Tech Hub Attracts International Investment',
-    summary: 'Major tech companies are setting up offices in Ethiopia\'s growing tech ecosystem.',
-    date: '2026-02-04',
+    title: 'Politics & Government News',
+    summary: 'Current political developments and government announcements.',
     source: 'Ethiopian Monitor',
-    url: 'https://ethiopianmonitor.com',
+    url: 'https://ethiopianmonitor.com/',
   },
   {
-    title: 'Ethiopian Airlines Expands Routes to South America',
-    summary: 'New direct flights connecting Addis Ababa to São Paulo and Buenos Aires.',
-    date: '2026-02-03',
-    source: 'Ethiopian Monitor',
-    url: 'https://ethiopianmonitor.com',
+    title: 'Regional & African Affairs',
+    summary: 'Ethiopia in the Horn of Africa – latest regional stories.',
+    source: 'BBC Africa',
+    url: 'https://www.bbc.com/news/world/africa',
   },
   {
-    title: 'Green Energy Initiative Reaches 80% of Rural Areas',
-    summary: 'Government renewable energy program brings electricity to millions.',
-    date: '2026-02-02',
-    source: 'Ethiopian Monitor',
-    url: 'https://ethiopianmonitor.com',
+    title: 'Ethiopia – Latest from Reuters',
+    summary: 'Verified international reporting on Ethiopian events today.',
+    source: 'Reuters',
+    url: 'https://www.reuters.com/world/africa/',
+  },
+  {
+    title: 'Fana Broadcasting – Local Coverage',
+    summary: 'Local Ethiopian news, sports, and culture updates.',
+    source: 'Fana BC',
+    url: 'https://www.fanabc.com/english/',
+  },
+  {
+    title: 'Ethiopian News Agency (ENA)',
+    summary: 'Official state news wire — updated continuously.',
+    source: 'ENA',
+    url: 'https://www.ena.et/en/',
   },
 ];
 
 const NewsPage = () => {
   const navigate = useNavigate();
   const { language } = useApp();
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const openNews = (url: string) => {
-    window.open(url, '_blank');
-  };
+  const today = useMemo(() => new Date(), [refreshKey]);
+  const newsItems = useMemo(() => buildTodaysNews(), [refreshKey]);
+
+  const openNews = (url: string) => window.open(url, '_blank', 'noopener,noreferrer');
 
   return (
     <div className="page-container bg-background">
-      {/* Header */}
       <header className="buna-header px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2">
           <ArrowLeft size={24} />
         </button>
-        <h1 className="font-semibold text-lg">{t('news', language)}</h1>
+        <h1 className="font-semibold text-lg flex-1">{t('news', language)}</h1>
+        <button
+          onClick={() => setRefreshKey((k) => k + 1)}
+          className="p-2 text-muted-foreground hover:text-primary transition-colors"
+          aria-label="Refresh"
+        >
+          <RefreshCw size={20} />
+        </button>
       </header>
 
-      {/* News List */}
+      <div className="px-4 pt-3 text-xs text-muted-foreground">
+        Live sources · {today.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+      </div>
+
       <div className="p-4 space-y-4">
         {newsItems.map((news, idx) => (
           <button
@@ -78,8 +104,11 @@ const NewsPage = () => {
                 <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
                   <span>{news.source}</span>
                   <span>•</span>
-                  <span>{new Date(news.date).toLocaleDateString()}</span>
+                  <span>{today.toLocaleDateString()}</span>
                 </div>
+                <span className="inline-flex items-center gap-1 mt-2 text-xs text-primary font-medium">
+                  Open source website <ExternalLink size={12} />
+                </span>
               </div>
               <ExternalLink size={16} className="text-muted-foreground group-hover:text-primary transition-colors mt-1" />
             </div>
