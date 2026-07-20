@@ -25,6 +25,7 @@ import PostDetailPage from "./pages/PostDetailPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import VerificationRequestPage from "./pages/VerificationRequestPage";
 import AdminVerificationsPage from "./pages/AdminVerificationsPage";
+import BunaEntetaPage from "./pages/BunaEntetaPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,6 +77,7 @@ const AppRoutes = () => {
       <Route path="/u/:userId" element={<ProtectedRoute><PublicProfilePage /></ProtectedRoute>} />
       <Route path="/verify" element={<ProtectedRoute><VerificationRequestPage /></ProtectedRoute>} />
       <Route path="/admin/verifications" element={<ProtectedRoute><AdminVerificationsPage /></ProtectedRoute>} />
+      <Route path="/friends" element={<ProtectedRoute><BunaEntetaPage /></ProtectedRoute>} />
 
 
       <Route path="*" element={<NotFound />} />

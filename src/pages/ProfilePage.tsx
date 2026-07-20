@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
   ArrowLeft, Camera, Settings, Bell, Shield,
-  Bot, LogOut, Mail, ChevronRight, Moon, Globe, Edit2, Check, X, Info, BadgeCheck,
+  Bot, LogOut, Mail, ChevronRight, Moon, Globe, Edit2, Check, X, Info, BadgeCheck, Users,
 } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
 
@@ -121,6 +121,7 @@ const ProfilePage = () => {
 
   const menuItems = [
     { icon: BadgeCheck, label: profile?.is_verified ? 'Buna Sini Verified' : 'Get Verified', onClick: () => navigate('/verify'), highlight: true },
+    { icon: Users, label: 'Buna Enteta (Friends)', onClick: () => navigate('/friends') },
     { icon: Bell, label: 'Notifications', onClick: () => navigate('/notifications') },
     { icon: Settings, label: t('settings', language), onClick: () => navigate('/settings') },
     { icon: Shield, label: 'Privacy', onClick: () => navigate('/privacy') },
