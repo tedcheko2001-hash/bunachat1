@@ -1,18 +1,32 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp, t } from '@/contexts/AppContext';
 import BottomNav from '@/components/BottomNav';
 import {
-  ArrowLeft, Sun, Moon, Monitor, Globe, Bell, Shield, Info, ChevronRight,
+  ArrowLeft, Sun, Moon, Monitor, Globe, Volume2, VolumeX,
 } from 'lucide-react';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
   const { language, themeMode, setThemeMode, setLanguage } = useApp();
+  const [soundOn, setSoundOn] = useState<boolean>(() => {
+    const v = localStorage.getItem('bunachat-notif-sound');
+    return v === null ? true : v === 'on';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('bunachat-notif-sound', soundOn ? 'on' : 'off');
+  }, [soundOn]);
 
   const themeOptions = [
     { value: 'light' as const, icon: Sun, label: 'Light' },
     { value: 'dark' as const, icon: Moon, label: 'Dark' },
     { value: 'system' as const, icon: Monitor, label: 'System Default' },
+  ];
+
+  const soundOptions = [
+    { value: true, icon: Volume2, label: 'Sound On' },
+    { value: false, icon: VolumeX, label: 'Mute' },
   ];
 
   return (
