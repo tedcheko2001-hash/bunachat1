@@ -173,10 +173,10 @@ const HomePage = () => {
   };
 
   const quickActions = [
-    { icon: MessageCircle, label: 'Chat', color: 'bg-primary', onClick: () => navigate('/conversations') },
-    { icon: Coffee, label: t('bunaRooms', language), color: 'bg-buna-brown', onClick: () => navigate('/rooms') },
-    { icon: Newspaper, label: t('news', language), color: 'bg-buna-gold', onClick: () => navigate('/news') },
-    { icon: Briefcase, label: t('opportunities', language), color: 'bg-accent', onClick: () => navigate('/opportunities') },
+    { icon: MessageCircle, label: 'Chat', color: 'btn-basket-terracotta', onClick: () => navigate('/conversations') },
+    { icon: Coffee, label: t('bunaRooms', language), color: 'btn-basket-red', onClick: () => navigate('/rooms') },
+    { icon: Newspaper, label: t('news', language), color: 'btn-basket-mustard', onClick: () => navigate('/news') },
+    { icon: Briefcase, label: t('opportunities', language), color: 'btn-basket-clay', onClick: () => navigate('/opportunities') },
   ];
 
 
