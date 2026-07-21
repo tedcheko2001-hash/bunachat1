@@ -59,6 +59,7 @@ const RoomChatPage = () => {
   const [ceremonyDesc, setCeremonyDesc] = useState('');
   const [ceremonyWhen, setCeremonyWhen] = useState('');
   const [activeCeremony, setActiveCeremony] = useState<Ceremony | null>(null);
+  const [liveOpen, setLiveOpen] = useState(false);
   const [ceremonyParticipants, setCeremonyParticipants] = useState<Profile[]>([]);
 
   useEffect(() => {
