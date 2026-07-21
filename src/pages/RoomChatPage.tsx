@@ -356,6 +356,7 @@ const RoomChatPage = () => {
       .eq('id', c.id);
     toast.success('Ceremony ended');
     setActiveCeremony(null);
+    setLiveOpen(false);
     setCeremonyParticipants([]);
     fetchCeremonies();
   };
@@ -365,6 +366,7 @@ const RoomChatPage = () => {
     await (supabase as any).from('ceremony_participants')
       .insert({ ceremony_id: c.id, user_id: user.id });
     setActiveCeremony(c);
+    setLiveOpen(true);
     fetchParticipants(c.id);
   };
 
@@ -373,6 +375,7 @@ const RoomChatPage = () => {
     await (supabase as any).from('ceremony_participants')
       .delete().eq('ceremony_id', c.id).eq('user_id', user.id);
     setActiveCeremony(null);
+    setLiveOpen(false);
     setCeremonyParticipants([]);
   };
 
