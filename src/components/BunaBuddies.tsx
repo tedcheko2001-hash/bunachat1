@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
-import { MapPin, Loader2, Navigation } from 'lucide-react';
+import { MapPin, Loader2, Navigation, Coffee } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { toast } from 'sonner';
 
