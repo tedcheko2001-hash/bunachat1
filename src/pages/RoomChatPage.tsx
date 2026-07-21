@@ -4,6 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Send, Users, UserPlus, X, Trash2, LogOut, Calendar, Radio, Play, Square } from 'lucide-react';
 import { toast } from 'sonner';
+import LiveCeremonyView from '@/components/LiveCeremonyView';
 
 interface Message {
   id: string;
@@ -58,6 +59,7 @@ const RoomChatPage = () => {
   const [ceremonyDesc, setCeremonyDesc] = useState('');
   const [ceremonyWhen, setCeremonyWhen] = useState('');
   const [activeCeremony, setActiveCeremony] = useState<Ceremony | null>(null);
+  const [liveOpen, setLiveOpen] = useState(false);
   const [ceremonyParticipants, setCeremonyParticipants] = useState<Profile[]>([]);
 
   useEffect(() => {
@@ -331,6 +333,7 @@ const RoomChatPage = () => {
     await (supabase as any).from('ceremony_participants').insert({ ceremony_id: c.id, user_id: user!.id });
     toast.success('🔴 You are live!');
     setActiveCeremony({ ...c, is_live: true });
+    setLiveOpen(true);
     fetchParticipants(c.id);
 
     // Notify room members
@@ -353,6 +356,7 @@ const RoomChatPage = () => {
       .eq('id', c.id);
     toast.success('Ceremony ended');
     setActiveCeremony(null);
+    setLiveOpen(false);
     setCeremonyParticipants([]);
     fetchCeremonies();
   };
@@ -362,6 +366,7 @@ const RoomChatPage = () => {
     await (supabase as any).from('ceremony_participants')
       .insert({ ceremony_id: c.id, user_id: user.id });
     setActiveCeremony(c);
+    setLiveOpen(true);
     fetchParticipants(c.id);
   };
 
@@ -370,6 +375,7 @@ const RoomChatPage = () => {
     await (supabase as any).from('ceremony_participants')
       .delete().eq('ceremony_id', c.id).eq('user_id', user.id);
     setActiveCeremony(null);
+    setLiveOpen(false);
     setCeremonyParticipants([]);
   };
 
@@ -647,6 +653,36 @@ const RoomChatPage = () => {
           </button>
         </div>
       </div>
+
+      {liveOpen && activeCeremony && (
+        <LiveCeremonyView
+          isHost={activeCeremony.host_id === user?.id}
+          title={activeCeremony.title}
+          hostName={profiles[activeCeremony.host_id]?.name}
+          viewerCount={ceremonyParticipants.length}
+          currentUserName={profiles[user?.id || '']?.name || 'You'}
+          liveMessages={messages.slice(-30).map((m) => ({
+            id: m.id,
+            name: profiles[m.sender_id]?.name || 'User',
+            content: m.content,
+          }))}
+          onSendMessage={async (text) => {
+            if (!user || !roomId) return;
+            await supabase.from('messages').insert({
+              sender_id: user.id,
+              room_id: roomId,
+              content: text,
+            });
+          }}
+          onEnd={() => {
+            if (activeCeremony.host_id === user?.id) {
+              handleEndCeremony(activeCeremony);
+            } else {
+              handleLeaveLive(activeCeremony);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };
