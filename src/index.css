@@ -253,13 +253,13 @@
            transition-all duration-200;
   }
 
-  /* Story ring — gradient border */
+  /* Story ring — warm terracotta → gold → red gradient */
   .story-ring {
     background: conic-gradient(from 180deg,
-      hsl(var(--buna-green)),
-      hsl(var(--buna-gold)),
-      hsl(var(--buna-brown)),
-      hsl(var(--buna-green)));
+      hsl(var(--basket-terracotta)),
+      hsl(var(--basket-mustard)),
+      hsl(var(--basket-red)),
+      hsl(var(--basket-terracotta)));
     padding: 2px;
     border-radius: 9999px;
   }
@@ -268,6 +268,12 @@
     padding: 2px;
     border-radius: 9999px;
   }
+
+  /* Feature button palette — pulled from woven basket colors */
+  .btn-basket-terracotta { background-color: hsl(var(--basket-terracotta)); }
+  .btn-basket-red        { background-color: hsl(var(--basket-red)); }
+  .btn-basket-mustard    { background-color: hsl(var(--basket-mustard)); }
+  .btn-basket-clay       { background-color: hsl(var(--basket-clay)); }
 
   .loading-dots {
     display: flex;
