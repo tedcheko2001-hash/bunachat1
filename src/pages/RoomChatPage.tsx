@@ -333,6 +333,7 @@ const RoomChatPage = () => {
     await (supabase as any).from('ceremony_participants').insert({ ceremony_id: c.id, user_id: user!.id });
     toast.success('🔴 You are live!');
     setActiveCeremony({ ...c, is_live: true });
+    setLiveOpen(true);
     fetchParticipants(c.id);
 
     // Notify room members
