@@ -4,6 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Send, Users, UserPlus, X, Trash2, LogOut, Calendar, Radio, Play, Square } from 'lucide-react';
 import { toast } from 'sonner';
+import LiveCeremonyView from '@/components/LiveCeremonyView';
 
 interface Message {
   id: string;
