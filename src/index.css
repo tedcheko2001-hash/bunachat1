@@ -47,6 +47,12 @@
     --buna-gold: 44 84% 46%;              /* #D4A017 */
     --buna-red: 0 75% 50%;
 
+    /* Woven basket palette — for feature buttons */
+    --basket-terracotta: 14 65% 52%;      /* #D65A3A */
+    --basket-red: 6 72% 44%;              /* #C0392B warm red */
+    --basket-mustard: 40 85% 50%;         /* #E8A317 mustard/gold */
+    --basket-clay: 22 55% 38%;            /* #8B5A2B deep clay */
+
     /* Verified badge — Buna Sini brown gradient */
     --verified-badge-start: 24 45% 30%;
     --verified-badge-end: 20 55% 22%;
