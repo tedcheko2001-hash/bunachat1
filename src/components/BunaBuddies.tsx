@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
-import { MapPin, Loader2, Navigation } from 'lucide-react';
+import { MapPin, Loader2, Navigation, Coffee } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { toast } from 'sonner';
 
@@ -123,8 +123,15 @@ const BunaBuddies = () => {
       )}
 
       {hasLocation && !loading && buddies.length === 0 && (
-        <div className="buna-card p-4 text-center text-sm text-muted-foreground">
-          No buddies found nearby yet. Check back soon!
+        <div className="buna-card p-6 flex flex-col items-center justify-center text-center gap-3">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center"
+               style={{ background: 'linear-gradient(135deg, hsl(var(--basket-terracotta) / 0.2), hsl(var(--basket-mustard) / 0.2))' }}>
+            <Coffee size={30} className="text-[hsl(var(--basket-clay))]" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">No buddies nearby yet</p>
+            <p className="text-xs text-muted-foreground mt-1">Your jebena is empty — check back soon as more coffee lovers join.</p>
+          </div>
         </div>
       )}
 

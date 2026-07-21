@@ -47,6 +47,12 @@
     --buna-gold: 44 84% 46%;              /* #D4A017 */
     --buna-red: 0 75% 50%;
 
+    /* Woven basket palette — for feature buttons */
+    --basket-terracotta: 14 65% 52%;      /* #D65A3A */
+    --basket-red: 6 72% 44%;              /* #C0392B warm red */
+    --basket-mustard: 40 85% 50%;         /* #E8A317 mustard/gold */
+    --basket-clay: 22 55% 38%;            /* #8B5A2B deep clay */
+
     /* Verified badge — Buna Sini brown gradient */
     --verified-badge-start: 24 45% 30%;
     --verified-badge-end: 20 55% 22%;
@@ -109,6 +115,11 @@
     --buna-cream: 30 15% 18%;
     --buna-gold: 45 97% 58%;              /* #FBC02D */
     --buna-red: 0 75% 55%;
+
+    --basket-terracotta: 14 70% 58%;
+    --basket-red: 6 75% 52%;
+    --basket-mustard: 40 90% 56%;
+    --basket-clay: 22 55% 48%;
 
     --verified-badge-start: 24 45% 45%;
     --verified-badge-end: 20 55% 35%;
@@ -242,13 +253,13 @@
            transition-all duration-200;
   }
 
-  /* Story ring — gradient border */
+  /* Story ring — warm terracotta → gold → red gradient */
   .story-ring {
     background: conic-gradient(from 180deg,
-      hsl(var(--buna-green)),
-      hsl(var(--buna-gold)),
-      hsl(var(--buna-brown)),
-      hsl(var(--buna-green)));
+      hsl(var(--basket-terracotta)),
+      hsl(var(--basket-mustard)),
+      hsl(var(--basket-red)),
+      hsl(var(--basket-terracotta)));
     padding: 2px;
     border-radius: 9999px;
   }
@@ -257,6 +268,12 @@
     padding: 2px;
     border-radius: 9999px;
   }
+
+  /* Feature button palette — pulled from woven basket colors */
+  .btn-basket-terracotta { background-color: hsl(var(--basket-terracotta)); }
+  .btn-basket-red        { background-color: hsl(var(--basket-red)); }
+  .btn-basket-mustard    { background-color: hsl(var(--basket-mustard)); }
+  .btn-basket-clay       { background-color: hsl(var(--basket-clay)); }
 
   .loading-dots {
     display: flex;

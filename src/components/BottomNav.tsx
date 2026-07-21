@@ -40,6 +40,7 @@ const BottomNav = () => {
     { icon: MessageCircle, label: t('chat', language), path: '/conversations', badge: unreadCount },
     { icon: Coffee, label: t('bunaRooms', language), path: '/rooms' },
     { icon: Newspaper, label: t('news', language), path: '/news' },
+    { icon: Briefcase, label: t('opportunities', language), path: '/opportunities' },
     { icon: User, label: t('profile', language), path: '/profile' },
   ];
 
@@ -53,13 +54,13 @@ const BottomNav = () => {
         >
           <div className="relative">
             <Icon size={22} />
-            {badge && badge > 0 && (
+            {typeof badge === 'number' && badge > 0 && (
               <span className="absolute -top-1.5 -right-2 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
                 {badge > 99 ? '99+' : badge}
               </span>
             )}
           </div>
-          <span className="text-xs font-medium">{label}</span>
+          <span className="text-[10px] font-medium">{label}</span>
         </button>
       ))}
     </nav>
