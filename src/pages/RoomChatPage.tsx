@@ -653,6 +653,36 @@ const RoomChatPage = () => {
           </button>
         </div>
       </div>
+
+      {liveOpen && activeCeremony && (
+        <LiveCeremonyView
+          isHost={activeCeremony.host_id === user?.id}
+          title={activeCeremony.title}
+          hostName={profiles[activeCeremony.host_id]?.name}
+          viewerCount={ceremonyParticipants.length}
+          currentUserName={profiles[user?.id || '']?.name || 'You'}
+          liveMessages={messages.slice(-30).map((m) => ({
+            id: m.id,
+            name: profiles[m.sender_id]?.name || 'User',
+            content: m.content,
+          }))}
+          onSendMessage={async (text) => {
+            if (!user || !roomId) return;
+            await supabase.from('messages').insert({
+              sender_id: user.id,
+              room_id: roomId,
+              content: text,
+            });
+          }}
+          onEnd={() => {
+            if (activeCeremony.host_id === user?.id) {
+              handleEndCeremony(activeCeremony);
+            } else {
+              handleLeaveLive(activeCeremony);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };
