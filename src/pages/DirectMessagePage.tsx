@@ -22,6 +22,8 @@ const DirectMessagePage = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user } = useApp();
+  const { startCall } = useCall();
+  const otherUserId = userId;
   const [messages, setMessages] = useState<Message[]>([]);
   const [otherProfile, setOtherProfile] = useState<Profile | null>(null);
   const [newMessage, setNewMessage] = useState('');
