@@ -64,6 +64,32 @@ const StoryViewer = ({ userId, onClose }: StoryViewerProps) => {
     });
   }, [current?.id, user?.id]);
 
+  // Load viewers for own stories
+  const isOwn = !!current && current.user_id === user?.id;
+  useEffect(() => {
+    if (!current || !isOwn) { setViewers([]); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('story_views')
+        .select('viewer_id, viewed_at')
+        .eq('story_id', current.id)
+        .order('viewed_at', { ascending: false });
+      if (cancelled || !data?.length) { setViewers([]); return; }
+      const ids = data.map((v: any) => v.viewer_id);
+      const { data: profs } = await (supabase as any)
+        .from('profiles_public')
+        .select('user_id, name, avatar_url')
+        .in('user_id', ids);
+      if (cancelled) return;
+      const map = new Map((profs || []).map((p: any) => [p.user_id, p]));
+      setViewers(ids.map((id: string) => map.get(id) || { user_id: id, name: 'User', avatar_url: null }) as any);
+    })();
+    return () => { cancelled = true; };
+  }, [current?.id, isOwn]);
+
+
+
   // Progress animation
   useEffect(() => {
     if (!current) return;
