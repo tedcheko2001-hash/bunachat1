@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Send, User, Trash2 } from 'lucide-react';
+import { ArrowLeft, Send, User, Trash2, Phone, Video as VideoIcon } from 'lucide-react';
+import { useCall } from '@/contexts/CallContext';
 import { toast } from 'sonner';
 
 interface Message {
