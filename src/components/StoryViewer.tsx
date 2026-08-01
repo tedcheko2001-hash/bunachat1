@@ -231,6 +231,40 @@ const StoryViewer = ({ userId, onClose }: StoryViewerProps) => {
           <ChevronRight size={40} className="opacity-0 group-hover:opacity-100 ml-auto mr-2" />
         </button>
       </div>
+
+      {/* Story viewers (own stories only) */}
+      {isOwn && (
+        <div className="relative z-20 px-4 pb-6 pt-2">
+          <button
+            onClick={() => { setShowViewers(v => !v); pausedRef.current = !showViewers; }}
+            className="flex items-center gap-2 text-white/90 text-sm"
+          >
+            <Eye size={18} />
+            <span>{viewers.length} {viewers.length === 1 ? 'view' : 'views'}</span>
+          </button>
+
+          {showViewers && (
+            <div className="mt-3 max-h-56 overflow-y-auto rounded-2xl bg-white/10 backdrop-blur p-3 space-y-3">
+              {viewers.length === 0 ? (
+                <p className="text-white/60 text-sm text-center py-4">No one has viewed this story yet</p>
+              ) : (
+                viewers.map(v => (
+                  <div key={v.user_id} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-white/15 flex items-center justify-center">
+                      {v.avatar_url ? (
+                        <img src={v.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-white text-xs font-bold">{v.name?.charAt(0) || '?'}</span>
+                      )}
+                    </div>
+                    <span className="text-white text-sm">{v.name}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
