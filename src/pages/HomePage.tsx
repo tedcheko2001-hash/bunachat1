@@ -444,6 +444,14 @@ const HomePage = () => {
         />
       )}
 
+      {/* Footer */}
+      <footer className="mt-10 mb-4 px-4 text-center">
+        <p className="text-xs font-medium bg-gradient-to-r from-[hsl(var(--buna-green))] to-primary bg-clip-text text-transparent">
+          from Teds Online Company
+        </p>
+      </footer>
+
+
       {viewingStoriesOf && (
         <StoryViewer userId={viewingStoriesOf} onClose={() => setViewingStoriesOf(null)} />
       )}
