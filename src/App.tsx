@@ -92,7 +92,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AppProvider>
-          <AppRoutes />
+          <CallProvider>
+            <AppRoutes />
+          </CallProvider>
         </AppProvider>
       </BrowserRouter>
     </TooltipProvider>
