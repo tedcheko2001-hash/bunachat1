@@ -21,6 +21,7 @@ const PublicProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user } = useApp();
+  const { startCall } = useCall();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
