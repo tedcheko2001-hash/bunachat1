@@ -5,7 +5,8 @@ import { useApp } from '@/contexts/AppContext';
 import BottomNav from '@/components/BottomNav';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, MessageCircle, UserPlus, UserMinus } from 'lucide-react';
+import { ArrowLeft, MessageCircle, UserPlus, UserMinus, Phone, Video as VideoIcon } from 'lucide-react';
+import { useCall } from '@/contexts/CallContext';
 import { toast } from 'sonner';
 
 interface PublicProfile {
