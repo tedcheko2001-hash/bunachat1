@@ -656,6 +656,8 @@ const RoomChatPage = () => {
 
       {liveOpen && activeCeremony && (
         <LiveCeremonyView
+          ceremonyId={activeCeremony.id}
+          selfId={user?.id || ''}
           isHost={activeCeremony.host_id === user?.id}
           title={activeCeremony.title}
           hostName={profiles[activeCeremony.host_id]?.name}
