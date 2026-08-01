@@ -149,6 +149,20 @@ const PublicProfilePage = () => {
           >
             {isFollowing ? <><UserMinus size={18} /> Unfollow</> : <><UserPlus size={18} /> Follow</>}
           </Button>
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => void startCall(profile.user_id, false, profile.name, profile.avatar_url)}
+          >
+            <Phone size={18} /> Call
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => void startCall(profile.user_id, true, profile.name, profile.avatar_url)}
+          >
+            <VideoIcon size={18} /> Video Call
+          </Button>
         </div>
       </div>
 
