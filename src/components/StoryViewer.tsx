@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Trash2, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
@@ -27,6 +27,8 @@ const StoryViewer = ({ userId, onClose }: StoryViewerProps) => {
   const durationRef = useRef<number>(STORY_DURATION);
   const pausedRef = useRef<boolean>(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [viewers, setViewers] = useState<{ user_id: string; name: string; avatar_url: string | null }[]>([]);
+  const [showViewers, setShowViewers] = useState(false);
 
   useEffect(() => {
     void load();
@@ -61,6 +63,32 @@ const StoryViewer = ({ userId, onClose }: StoryViewerProps) => {
       viewer_id: user.id,
     });
   }, [current?.id, user?.id]);
+
+  // Load viewers for own stories
+  const isOwn = !!current && current.user_id === user?.id;
+  useEffect(() => {
+    if (!current || !isOwn) { setViewers([]); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('story_views')
+        .select('viewer_id, viewed_at')
+        .eq('story_id', current.id)
+        .order('viewed_at', { ascending: false });
+      if (cancelled || !data?.length) { setViewers([]); return; }
+      const ids = data.map((v: any) => v.viewer_id);
+      const { data: profs } = await (supabase as any)
+        .from('profiles_public')
+        .select('user_id, name, avatar_url')
+        .in('user_id', ids);
+      if (cancelled) return;
+      const map = new Map((profs || []).map((p: any) => [p.user_id, p]));
+      setViewers(ids.map((id: string) => map.get(id) || { user_id: id, name: 'User', avatar_url: null }) as any);
+    })();
+    return () => { cancelled = true; };
+  }, [current?.id, isOwn]);
+
+
 
   // Progress animation
   useEffect(() => {
@@ -203,6 +231,40 @@ const StoryViewer = ({ userId, onClose }: StoryViewerProps) => {
           <ChevronRight size={40} className="opacity-0 group-hover:opacity-100 ml-auto mr-2" />
         </button>
       </div>
+
+      {/* Story viewers (own stories only) */}
+      {isOwn && (
+        <div className="relative z-20 px-4 pb-6 pt-2">
+          <button
+            onClick={() => { setShowViewers(v => !v); pausedRef.current = !showViewers; }}
+            className="flex items-center gap-2 text-white/90 text-sm"
+          >
+            <Eye size={18} />
+            <span>{viewers.length} {viewers.length === 1 ? 'view' : 'views'}</span>
+          </button>
+
+          {showViewers && (
+            <div className="mt-3 max-h-56 overflow-y-auto rounded-2xl bg-white/10 backdrop-blur p-3 space-y-3">
+              {viewers.length === 0 ? (
+                <p className="text-white/60 text-sm text-center py-4">No one has viewed this story yet</p>
+              ) : (
+                viewers.map(v => (
+                  <div key={v.user_id} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-white/15 flex items-center justify-center">
+                      {v.avatar_url ? (
+                        <img src={v.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-white text-xs font-bold">{v.name?.charAt(0) || '?'}</span>
+                      )}
+                    </div>
+                    <span className="text-white text-sm">{v.name}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

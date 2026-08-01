@@ -125,8 +125,8 @@ const StoriesBar = ({ onCreate, onOpen }: StoriesBarProps) => {
           aria-label="Add your story"
         >
           <div className="relative">
-            <div className="story-ring">
-              <div className="w-14 h-14 rounded-full bg-card overflow-hidden border-2 border-card flex items-center justify-center">
+            <div className="p-[2px] rounded-full">
+              <div className="w-14 h-14 rounded-full bg-card overflow-hidden border-2 border-border flex items-center justify-center">
                 {myAvatar ? (
                   <img src={myAvatar} alt="" className="w-full h-full object-cover" />
                 ) : (

@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Send, User, Trash2 } from 'lucide-react';
+import { ArrowLeft, Send, User, Trash2, Phone, Video as VideoIcon } from 'lucide-react';
+import { useCall } from '@/contexts/CallContext';
 import { toast } from 'sonner';
 
 interface Message {
@@ -21,6 +22,8 @@ const DirectMessagePage = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user } = useApp();
+  const { startCall } = useCall();
+  const otherUserId = userId;
   const [messages, setMessages] = useState<Message[]>([]);
   const [otherProfile, setOtherProfile] = useState<Profile | null>(null);
   const [newMessage, setNewMessage] = useState('');
@@ -168,9 +171,27 @@ const DirectMessagePage = () => {
             <User size={20} />
           )}
         </div>
-        <div>
-          <h1 className="font-semibold text-base">{otherProfile?.name || 'Chat'}</h1>
+        <div className="flex-1 min-w-0">
+          <h1 className="font-semibold text-base truncate">{otherProfile?.name || 'Chat'}</h1>
         </div>
+        {otherUserId && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => void startCall(otherUserId, false, otherProfile?.name, otherProfile?.avatar_url ?? null)}
+              className="p-2 rounded-full hover:bg-primary-foreground/10 transition-colors"
+              aria-label="Voice call"
+            >
+              <Phone size={20} />
+            </button>
+            <button
+              onClick={() => void startCall(otherUserId, true, otherProfile?.name, otherProfile?.avatar_url ?? null)}
+              className="p-2 rounded-full hover:bg-primary-foreground/10 transition-colors"
+              aria-label="Video call"
+            >
+              <VideoIcon size={20} />
+            </button>
+          </div>
+        )}
       </header>
 
       {/* Messages */}

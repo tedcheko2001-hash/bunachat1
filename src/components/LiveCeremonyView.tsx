@@ -11,6 +11,7 @@ import {
   Coffee,
   Users,
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChatMsg {
   id: string;
@@ -19,6 +20,8 @@ interface ChatMsg {
 }
 
 interface Props {
+  ceremonyId: string;
+  selfId: string;
   isHost: boolean;
   title: string;
   hostName?: string;
@@ -31,7 +34,16 @@ interface Props {
 
 type PermState = 'idle' | 'requesting' | 'granted' | 'denied';
 
+const ICE_SERVERS: RTCConfiguration = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+  ],
+};
+
 const LiveCeremonyView = ({
+  ceremonyId,
+  selfId,
   isHost,
   title,
   hostName,
@@ -43,6 +55,11 @@ const LiveCeremonyView = ({
 }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const channelRef = useRef<any>(null);
+  const hostPeersRef = useRef<Record<string, RTCPeerConnection>>({});
+  const viewerPcRef = useRef<RTCPeerConnection | null>(null);
+  const pendingIceRef = useRef<Record<string, RTCIceCandidateInit[]>>({});
+
   const [facing, setFacing] = useState<'user' | 'environment'>('user');
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
@@ -50,15 +67,43 @@ const LiveCeremonyView = ({
   const [errMsg, setErrMsg] = useState<string>('');
   const [chatDraft, setChatDraft] = useState('');
   const [localChat, setLocalChat] = useState<ChatMsg[]>([]);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+
+  const send = useCallback(async (event: string, payload: Record<string, unknown>) => {
+    await channelRef.current?.send({ type: 'broadcast', event, payload });
+  }, []);
 
   const stopTracks = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
+    Object.values(hostPeersRef.current).forEach((pc) => pc.close());
+    hostPeersRef.current = {};
+    viewerPcRef.current?.close();
+    viewerPcRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
   }, []);
 
+  /* ---------- host: create a peer connection per viewer ---------- */
+  const createHostPeer = useCallback(
+    async (viewerId: string) => {
+      if (!streamRef.current) return;
+      hostPeersRef.current[viewerId]?.close();
+      const pc = new RTCPeerConnection(ICE_SERVERS);
+      hostPeersRef.current[viewerId] = pc;
+      streamRef.current.getTracks().forEach((t) => pc.addTrack(t, streamRef.current!));
+      pc.onicecandidate = (e) => {
+        if (e.candidate) void send('live-ice', { to: viewerId, from: selfId, candidate: e.candidate.toJSON() });
+      };
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      await send('live-offer', { to: viewerId, from: selfId, sdp: pc.localDescription });
+    },
+    [selfId, send],
+  );
+
+  /* ---------- media capture (host) ---------- */
   const startStream = useCallback(
     async (mode: 'user' | 'environment') => {
       if (!isHost) return;
@@ -78,21 +123,105 @@ const LiveCeremonyView = ({
         stream.getAudioTracks().forEach((t) => (t.enabled = micOn));
         stream.getVideoTracks().forEach((t) => (t.enabled = camOn));
         setPerm('granted');
+        // tell viewers the broadcast is up so they (re)request an offer
+        void send('host-ready', { from: selfId });
       } catch (e: any) {
         setPerm('denied');
         setErrMsg(e?.message || 'Camera & microphone access is required to go live.');
       }
     },
-    [isHost, stopTracks, micOn, camOn],
+    [isHost, stopTracks, micOn, camOn, send, selfId],
   );
 
+  /* ---------- signalling channel ---------- */
   useEffect(() => {
-    if (isHost) startStream(facing);
-    return () => stopTracks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const chan = supabase.channel(`ceremony:${ceremonyId}`, {
+      config: { broadcast: { self: false } },
+    });
 
-  // Clean up on unmount / page hide
+    chan
+      .on('broadcast', { event: 'viewer-join' }, async ({ payload }: any) => {
+        if (!isHost || !streamRef.current) return;
+        await createHostPeer(payload.from);
+      })
+      .on('broadcast', { event: 'host-ready' }, async () => {
+        if (isHost) return;
+        await send('viewer-join', { from: selfId });
+      })
+      .on('broadcast', { event: 'live-offer' }, async ({ payload }: any) => {
+        if (isHost || payload.to !== selfId) return;
+        viewerPcRef.current?.close();
+        const pc = new RTCPeerConnection(ICE_SERVERS);
+        viewerPcRef.current = pc;
+        pc.ontrack = (e) => setRemoteStream(e.streams[0]);
+        pc.onicecandidate = (e) => {
+          if (e.candidate)
+            void send('live-ice', { to: payload.from, from: selfId, candidate: e.candidate.toJSON() });
+        };
+        await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        for (const c of pendingIceRef.current[selfId] || []) {
+          await pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
+        }
+        pendingIceRef.current[selfId] = [];
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await send('live-answer', { to: payload.from, from: selfId, sdp: pc.localDescription });
+      })
+      .on('broadcast', { event: 'live-answer' }, async ({ payload }: any) => {
+        if (!isHost || payload.to !== selfId) return;
+        const pc = hostPeersRef.current[payload.from];
+        if (!pc) return;
+        await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp)).catch(() => {});
+        for (const c of pendingIceRef.current[payload.from] || []) {
+          await pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
+        }
+        pendingIceRef.current[payload.from] = [];
+      })
+      .on('broadcast', { event: 'live-ice' }, async ({ payload }: any) => {
+        if (payload.to !== selfId) return;
+        const pc = isHost ? hostPeersRef.current[payload.from] : viewerPcRef.current;
+        if (!pc || !pc.remoteDescription) {
+          const key = isHost ? payload.from : selfId;
+          pendingIceRef.current[key] = [...(pendingIceRef.current[key] || []), payload.candidate];
+          return;
+        }
+        await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)).catch(() => {});
+      })
+      .on('broadcast', { event: 'live-ended' }, () => {
+        if (!isHost) {
+          stopTracks();
+          onEnd();
+        }
+      })
+      .subscribe(async (status: string) => {
+        if (status !== 'SUBSCRIBED') return;
+        channelRef.current = chan;
+        if (isHost) {
+          await startStream(facing);
+        } else {
+          await send('viewer-join', { from: selfId });
+        }
+      });
+
+    channelRef.current = chan;
+
+    return () => {
+      stopTracks();
+      supabase.removeChannel(chan);
+      channelRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ceremonyId, selfId, isHost]);
+
+  // Attach remote stream for viewers
+  useEffect(() => {
+    if (!isHost && videoRef.current && remoteStream) {
+      videoRef.current.srcObject = remoteStream;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [remoteStream, isHost]);
+
+  // Clean up on page hide
   useEffect(() => {
     const onHide = () => stopTracks();
     window.addEventListener('pagehide', onHide);
@@ -123,9 +252,14 @@ const LiveCeremonyView = ({
     const next = facing === 'user' ? 'environment' : 'user';
     setFacing(next);
     await startStream(next);
+    // renegotiate with every viewer using the new tracks
+    for (const viewerId of Object.keys(hostPeersRef.current)) {
+      await createHostPeer(viewerId);
+    }
   };
 
   const handleEnd = () => {
+    if (isHost) void send('live-ended', { from: selfId });
     stopTracks();
     onEnd();
   };
@@ -145,19 +279,20 @@ const LiveCeremonyView = ({
   };
 
   const chat = liveMessages.length ? liveMessages : localChat;
+  const showVideo = isHost ? perm === 'granted' : !!remoteStream;
 
   return (
     <div className="fixed inset-0 z-[100] bg-black text-white flex flex-col">
       {/* Video / placeholder */}
       <div className="absolute inset-0">
-        {isHost && perm === 'granted' ? (
+        {showVideo ? (
           <video
             ref={videoRef}
             autoPlay
             playsInline
-            muted
+            muted={isHost}
             className={`w-full h-full object-cover ${
-              facing === 'user' ? 'scale-x-[-1]' : ''
+              isHost && facing === 'user' ? 'scale-x-[-1]' : ''
             }`}
           />
         ) : isHost && perm === 'denied' ? (
@@ -192,13 +327,13 @@ const LiveCeremonyView = ({
             <p className="text-sm text-white/70">Requesting camera & mic…</p>
           </div>
         ) : (
-          // Viewer placeholder
+          // Viewer placeholder while connecting
           <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#2a140a] via-black to-black">
-            <div className="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center mb-4">
+            <div className="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 animate-pulse">
               <Coffee size={44} className="text-amber-400" />
             </div>
             <p className="text-lg font-semibold">{hostName || 'Host'} is live</p>
-            <p className="text-sm text-white/60 mt-1">Enjoying the ceremony together ☕</p>
+            <p className="text-sm text-white/60 mt-1">Connecting to the ceremony… ☕</p>
           </div>
         )}
         {/* subtle vignette */}

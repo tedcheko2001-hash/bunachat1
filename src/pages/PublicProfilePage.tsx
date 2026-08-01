@@ -5,7 +5,8 @@ import { useApp } from '@/contexts/AppContext';
 import BottomNav from '@/components/BottomNav';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, MessageCircle, UserPlus, UserMinus } from 'lucide-react';
+import { ArrowLeft, MessageCircle, UserPlus, UserMinus, Phone, Video as VideoIcon } from 'lucide-react';
+import { useCall } from '@/contexts/CallContext';
 import { toast } from 'sonner';
 
 interface PublicProfile {
@@ -20,6 +21,7 @@ const PublicProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user } = useApp();
+  const { startCall } = useCall();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -148,6 +150,20 @@ const PublicProfilePage = () => {
             className="gap-2"
           >
             {isFollowing ? <><UserMinus size={18} /> Unfollow</> : <><UserPlus size={18} /> Follow</>}
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => void startCall(profile.user_id, false, profile.name, profile.avatar_url)}
+          >
+            <Phone size={18} /> Call
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => void startCall(profile.user_id, true, profile.name, profile.avatar_url)}
+          >
+            <VideoIcon size={18} /> Video Call
           </Button>
         </div>
       </div>

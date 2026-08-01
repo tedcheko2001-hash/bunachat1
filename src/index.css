@@ -253,13 +253,12 @@
            transition-all duration-200;
   }
 
-  /* Story ring — warm terracotta → gold → red gradient */
+  /* Story ring — Ethiopian green → coffee brown gradient */
   .story-ring {
     background: conic-gradient(from 180deg,
-      hsl(var(--basket-terracotta)),
-      hsl(var(--basket-mustard)),
-      hsl(var(--basket-red)),
-      hsl(var(--basket-terracotta)));
+      hsl(var(--buna-green)),
+      hsl(var(--basket-clay)),
+      hsl(var(--buna-green)));
     padding: 2px;
     border-radius: 9999px;
   }
@@ -268,6 +267,17 @@
     padding: 2px;
     border-radius: 9999px;
   }
+
+  /* Jebena pulse — used by call UI */
+  .jebena-pulse {
+    animation: jebena-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes jebena-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.12); opacity: 0.75; }
+  }
+
+  .btn-basket-green { background-color: hsl(var(--buna-green)); }
 
   /* Feature button palette — pulled from woven basket colors */
   .btn-basket-terracotta { background-color: hsl(var(--basket-terracotta)); }
