@@ -168,9 +168,27 @@ const DirectMessagePage = () => {
             <User size={20} />
           )}
         </div>
-        <div>
-          <h1 className="font-semibold text-base">{otherProfile?.name || 'Chat'}</h1>
+        <div className="flex-1 min-w-0">
+          <h1 className="font-semibold text-base truncate">{otherProfile?.name || 'Chat'}</h1>
         </div>
+        {otherUserId && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => void startCall(otherUserId, false, otherProfile?.name, otherProfile?.avatar_url ?? null)}
+              className="p-2 rounded-full hover:bg-primary-foreground/10 transition-colors"
+              aria-label="Voice call"
+            >
+              <Phone size={20} />
+            </button>
+            <button
+              onClick={() => void startCall(otherUserId, true, otherProfile?.name, otherProfile?.avatar_url ?? null)}
+              className="p-2 rounded-full hover:bg-primary-foreground/10 transition-colors"
+              aria-label="Video call"
+            >
+              <VideoIcon size={20} />
+            </button>
+          </div>
+        )}
       </header>
 
       {/* Messages */}
