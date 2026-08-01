@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Trash2, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
