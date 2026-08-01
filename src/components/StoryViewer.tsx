@@ -27,6 +27,8 @@ const StoryViewer = ({ userId, onClose }: StoryViewerProps) => {
   const durationRef = useRef<number>(STORY_DURATION);
   const pausedRef = useRef<boolean>(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [viewers, setViewers] = useState<{ user_id: string; name: string; avatar_url: string | null }[]>([]);
+  const [showViewers, setShowViewers] = useState(false);
 
   useEffect(() => {
     void load();
