@@ -153,7 +153,16 @@ const LiveCeremonyView = ({
         viewerPcRef.current?.close();
         const pc = new RTCPeerConnection(ICE_SERVERS);
         viewerPcRef.current = pc;
-        pc.ontrack = (e) => setRemoteStream(e.streams[0]);
+        pc.ontrack = (e) => {
+          const stream = e.streams[0] || new MediaStream([e.track]);
+          setRemoteStream(stream);
+        };
+        pc.oniceconnectionstatechange = () => {
+          console.log('[live] viewer ICE state:', pc.iceConnectionState);
+        };
+        pc.onconnectionstatechange = () => {
+          console.log('[live] viewer connection state:', pc.connectionState);
+        };
         pc.onicecandidate = (e) => {
           if (e.candidate)
             void send('live-ice', { to: payload.from, from: selfId, candidate: e.candidate.toJSON() });
@@ -167,6 +176,7 @@ const LiveCeremonyView = ({
         await pc.setLocalDescription(answer);
         await send('live-answer', { to: payload.from, from: selfId, sdp: pc.localDescription });
       })
+
       .on('broadcast', { event: 'live-answer' }, async ({ payload }: any) => {
         if (!isHost || payload.to !== selfId) return;
         const pc = hostPeersRef.current[payload.from];
