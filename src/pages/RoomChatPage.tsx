@@ -416,10 +416,31 @@ const RoomChatPage = () => {
         <button onClick={() => navigate('/rooms')} className="p-2 -ml-2">
           <ArrowLeft size={24} />
         </button>
+        <label className={`relative w-10 h-10 rounded-full overflow-hidden bg-primary/20 flex items-center justify-center shrink-0 ${isAdmin ? 'cursor-pointer' : ''}`}>
+          {room?.image_url ? (
+            <img src={room.image_url} alt={room.name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-sm font-bold">{room?.name?.charAt(0) || '☕'}</span>
+          )}
+          {isAdmin && (
+            <>
+              <span className="absolute bottom-0 inset-x-0 bg-black/50 text-[9px] text-center leading-tight py-0.5">
+                {uploadingPic ? '…' : 'Edit'}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleGroupPicture(e.target.files?.[0] || null)}
+              />
+            </>
+          )}
+        </label>
         <div className="flex-1">
           <h1 className="font-semibold text-base">{room?.name || 'Room'}</h1>
           <p className="text-xs opacity-80">{members.length} members</p>
         </div>
+
         <button onClick={() => setShowMembers(!showMembers)} className="p-2">
           <Users size={22} />
         </button>
