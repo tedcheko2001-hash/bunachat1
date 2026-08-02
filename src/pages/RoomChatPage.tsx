@@ -39,6 +39,7 @@ const RoomChatPage = () => {
   const [showMembers, setShowMembers] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [addUsername, setAddUsername] = useState('');
+  const [uploadingPic, setUploadingPic] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Ceremonies
