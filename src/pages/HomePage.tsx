@@ -313,7 +313,17 @@ const HomePage = () => {
                       </span>
                     </p>
                   </div>
+                  {user?.id === post.user_id && (
+                    <button
+                      onClick={() => handleDeletePost(post.id)}
+                      className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label="Delete post"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
                 </div>
+
 
                 {post.content && <p className="text-sm mb-3 whitespace-pre-wrap">{post.content}</p>}
 
