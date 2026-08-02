@@ -368,15 +368,25 @@ const LiveCeremonyView = ({
             <p className="text-sm text-white/70">Requesting camera & mic…</p>
           </div>
         ) : (
-          // Viewer placeholder while connecting
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#2a140a] via-black to-black">
-            <div className="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 animate-pulse">
-              <Coffee size={44} className="text-amber-400" />
+          // Viewer: keep the video element mounted, overlay a waiting state
+          <div className="w-full h-full relative bg-gradient-to-b from-[#2a140a] via-black to-black">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 animate-pulse">
+                <Coffee size={44} className="text-amber-400" />
+              </div>
+              <p className="text-lg font-semibold">{hostName || 'Host'} is live</p>
+              <p className="text-sm text-white/60 mt-1">Waiting for host video… ☕</p>
             </div>
-            <p className="text-lg font-semibold">{hostName || 'Host'} is live</p>
-            <p className="text-sm text-white/60 mt-1">Connecting to the ceremony… ☕</p>
           </div>
         )}
+
         {/* subtle vignette */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70" />
       </div>
