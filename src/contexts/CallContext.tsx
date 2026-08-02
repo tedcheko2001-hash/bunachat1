@@ -214,7 +214,12 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   /* ---------------- outgoing ---------------- */
   const startCall = useCallback(
     async (peerId: string, video: boolean, peerName?: string, peerAvatar?: string | null) => {
-      if (!user || call) return;
+      if (!user || (call && call.status !== 'ended')) return;
+      if (endTimerRef.current) {
+        clearTimeout(endTimerRef.current);
+        endTimerRef.current = null;
+      }
+      startedAtRef.current = null;
       let name = peerName;
       let avatar = peerAvatar ?? null;
       if (!name) {
