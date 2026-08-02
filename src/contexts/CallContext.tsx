@@ -289,9 +289,9 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
         /* ignore */
       }
     }
-    cleanup();
-    setCall(null);
-  }, [call, signal, cleanup, stopRing]);
+    finishCall('declined');
+  }, [call, signal, stopRing, finishCall]);
+
 
   /* ---------------- inbound signalling ---------------- */
   useEffect(() => {
