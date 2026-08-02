@@ -13,7 +13,11 @@ export interface CallState {
   video: boolean;
   role: 'caller' | 'callee';
   status: CallStatus;
+  /** seconds the call lasted — only set once status is 'ended' */
+  duration?: number;
+  endReason?: 'answered' | 'declined' | 'missed' | 'failed';
 }
+
 
 interface CallContextValue {
   call: CallState | null;
@@ -45,6 +49,8 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   const pendingOfferRef = useRef<{ sdp: any; video: boolean } | null>(null);
   const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
   const ringRef = useRef<{ ctx: AudioContext; timer: number } | null>(null);
+  const startedAtRef = useRef<number | null>(null);
+  const endTimerRef = useRef<number | null>(null);
 
   /* ---------------- ringtone / vibration ---------------- */
   const startRing = useCallback(() => {
@@ -120,9 +126,40 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [stopRing]);
 
+  /** Finish a call: stop media, log history, show the "Call ended" screen briefly. */
+  const finishCall = useCallback(
+    (reason: 'answered' | 'declined' | 'missed' | 'failed') => {
+      const started = startedAtRef.current;
+      const duration = started ? Math.round((Date.now() - started) / 1000) : 0;
+      startedAtRef.current = null;
+      cleanup();
+      setCall((c) => {
+        if (!c) return null;
+        // only one side writes the history row to avoid duplicates
+        if (user && c.role === 'caller') {
+          void (supabase as any).from('call_history').insert({
+            caller_id: user.id,
+            callee_id: c.peerId,
+            video: c.video,
+            duration_seconds: duration,
+            status: reason,
+          });
+        }
+        return { ...c, status: 'ended', duration, endReason: reason };
+      });
+      if (endTimerRef.current) clearTimeout(endTimerRef.current);
+      endTimerRef.current = window.setTimeout(() => {
+        setCall(null);
+        endTimerRef.current = null;
+      }, 2500);
+    },
+    [cleanup, user],
+  );
+
   const endCall = useCallback(
     async (notify = true) => {
       const peerId = call?.peerId;
+      const wasActive = call?.status === 'active' || !!startedAtRef.current;
       if (notify && peerId) {
         try {
           await signal(peerId, 'call-end', {});
@@ -130,11 +167,11 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
           /* ignore */
         }
       }
-      cleanup();
-      setCall(null);
+      finishCall(wasActive ? 'answered' : 'missed');
     },
-    [call?.peerId, signal, cleanup],
+    [call?.peerId, call?.status, signal, finishCall],
   );
+
 
   /* ---------------- peer connection ---------------- */
   const createPc = useCallback(
@@ -145,20 +182,24 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
       };
       pc.ontrack = (e) => {
         setRemoteStream(e.streams[0]);
+        if (!startedAtRef.current) startedAtRef.current = Date.now();
         setCall((c) => (c ? { ...c, status: 'active' } : c));
       };
       pc.onconnectionstatechange = () => {
+        console.log('[call] connection state:', pc.connectionState);
         if (pc.connectionState === 'connected') {
+          if (!startedAtRef.current) startedAtRef.current = Date.now();
           setCall((c) => (c ? { ...c, status: 'active' } : c));
         }
-        if (['failed', 'disconnected', 'closed'].includes(pc.connectionState)) {
-          setCall((c) => (c && c.status === 'active' ? { ...c, status: 'ended' } : c));
+        if (pc.connectionState === 'failed') {
+          finishCall('failed');
         }
       };
+
       pcRef.current = pc;
       return pc;
     },
-    [signal],
+    [signal, finishCall],
   );
 
   const getMedia = async (video: boolean) => {
@@ -173,7 +214,12 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   /* ---------------- outgoing ---------------- */
   const startCall = useCallback(
     async (peerId: string, video: boolean, peerName?: string, peerAvatar?: string | null) => {
-      if (!user || call) return;
+      if (!user || (call && call.status !== 'ended')) return;
+      if (endTimerRef.current) {
+        clearTimeout(endTimerRef.current);
+        endTimerRef.current = null;
+      }
+      startedAtRef.current = null;
       let name = peerName;
       let avatar = peerAvatar ?? null;
       if (!name) {
@@ -248,9 +294,9 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
         /* ignore */
       }
     }
-    cleanup();
-    setCall(null);
-  }, [call, signal, cleanup, stopRing]);
+    finishCall('declined');
+  }, [call, signal, stopRing, finishCall]);
+
 
   /* ---------------- inbound signalling ---------------- */
   useEffect(() => {
@@ -300,13 +346,12 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
       })
       .on('broadcast', { event: 'call-decline' }, () => {
         toast('Call declined');
-        cleanup();
-        setCall(null);
+        finishCall('declined');
       })
       .on('broadcast', { event: 'call-end' }, () => {
-        cleanup();
-        setCall(null);
+        finishCall(startedAtRef.current ? 'answered' : 'missed');
       })
+
       .subscribe();
 
     return () => {

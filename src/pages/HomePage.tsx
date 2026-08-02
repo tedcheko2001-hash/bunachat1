@@ -17,7 +17,7 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 import {
   MessageCircle, Coffee, Newspaper, Briefcase,
   ChevronRight, Plus, Image as ImageIcon, MessageSquare, Search, X,
-  Globe, Users, Lock,
+  Globe, Users, Lock, Trash2,
 } from 'lucide-react';
 
 type Visibility = 'public' | 'friends' | 'private';
@@ -94,6 +94,17 @@ const HomePage = () => {
   };
 
 
+  const handleDeletePost = async (postId: string) => {
+    if (!user) return;
+    if (!window.confirm('Delete this post? This cannot be undone.')) return;
+    const { error } = await supabase.from('posts').delete().eq('id', postId).eq('user_id', user.id);
+    if (error) {
+      toast.error('Could not delete post');
+      return;
+    }
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+    toast.success('Post deleted');
+  };
 
 
   const handleAddPostImages = (files: FileList | null) => {
@@ -302,7 +313,17 @@ const HomePage = () => {
                       </span>
                     </p>
                   </div>
+                  {user?.id === post.user_id && (
+                    <button
+                      onClick={() => handleDeletePost(post.id)}
+                      className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label="Delete post"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
                 </div>
+
 
                 {post.content && <p className="text-sm mb-3 whitespace-pre-wrap">{post.content}</p>}
 

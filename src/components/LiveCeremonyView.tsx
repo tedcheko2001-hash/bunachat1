@@ -68,6 +68,7 @@ const LiveCeremonyView = ({
   const [chatDraft, setChatDraft] = useState('');
   const [localChat, setLocalChat] = useState<ChatMsg[]>([]);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [needsUnmute, setNeedsUnmute] = useState(false);
 
   const send = useCallback(async (event: string, payload: Record<string, unknown>) => {
     await channelRef.current?.send({ type: 'broadcast', event, payload });
@@ -88,20 +89,28 @@ const LiveCeremonyView = ({
   /* ---------- host: create a peer connection per viewer ---------- */
   const createHostPeer = useCallback(
     async (viewerId: string) => {
-      if (!streamRef.current) return;
+      const stream = streamRef.current;
+      if (!stream) return;
+      const liveTracks = stream.getTracks().filter((t) => t.readyState === 'live');
+      if (liveTracks.length === 0) return;
       hostPeersRef.current[viewerId]?.close();
       const pc = new RTCPeerConnection(ICE_SERVERS);
       hostPeersRef.current[viewerId] = pc;
-      streamRef.current.getTracks().forEach((t) => pc.addTrack(t, streamRef.current!));
+      // add every active track BEFORE creating the offer
+      liveTracks.forEach((t) => pc.addTrack(t, stream));
+      pc.oniceconnectionstatechange = () => {
+        console.log('[live] host ICE state', viewerId, pc.iceConnectionState);
+      };
       pc.onicecandidate = (e) => {
         if (e.candidate) void send('live-ice', { to: viewerId, from: selfId, candidate: e.candidate.toJSON() });
       };
-      const offer = await pc.createOffer();
+      const offer = await pc.createOffer({ offerToReceiveAudio: false, offerToReceiveVideo: false });
       await pc.setLocalDescription(offer);
       await send('live-offer', { to: viewerId, from: selfId, sdp: pc.localDescription });
     },
     [selfId, send],
   );
+
 
   /* ---------- media capture (host) ---------- */
   const startStream = useCallback(
@@ -153,7 +162,16 @@ const LiveCeremonyView = ({
         viewerPcRef.current?.close();
         const pc = new RTCPeerConnection(ICE_SERVERS);
         viewerPcRef.current = pc;
-        pc.ontrack = (e) => setRemoteStream(e.streams[0]);
+        pc.ontrack = (e) => {
+          const stream = e.streams[0] || new MediaStream([e.track]);
+          setRemoteStream(stream);
+        };
+        pc.oniceconnectionstatechange = () => {
+          console.log('[live] viewer ICE state:', pc.iceConnectionState);
+        };
+        pc.onconnectionstatechange = () => {
+          console.log('[live] viewer connection state:', pc.connectionState);
+        };
         pc.onicecandidate = (e) => {
           if (e.candidate)
             void send('live-ice', { to: payload.from, from: selfId, candidate: e.candidate.toJSON() });
@@ -167,6 +185,7 @@ const LiveCeremonyView = ({
         await pc.setLocalDescription(answer);
         await send('live-answer', { to: payload.from, from: selfId, sdp: pc.localDescription });
       })
+
       .on('broadcast', { event: 'live-answer' }, async ({ payload }: any) => {
         if (!isHost || payload.to !== selfId) return;
         const pc = hostPeersRef.current[payload.from];
@@ -213,13 +232,35 @@ const LiveCeremonyView = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ceremonyId, selfId, isHost]);
 
-  // Attach remote stream for viewers
+  // Attach remote stream for viewers (muted first so autoplay is never blocked)
   useEffect(() => {
-    if (!isHost && videoRef.current && remoteStream) {
-      videoRef.current.srcObject = remoteStream;
-      videoRef.current.play().catch(() => {});
-    }
+    if (isHost || !remoteStream) return;
+    const el = videoRef.current;
+    if (!el) return;
+    el.srcObject = remoteStream;
+    el.muted = true;
+    el.play()
+      .then(async () => {
+        try {
+          el.muted = false;
+          await el.play();
+          setNeedsUnmute(false);
+        } catch {
+          setNeedsUnmute(true);
+        }
+      })
+      .catch(() => setNeedsUnmute(true));
   }, [remoteStream, isHost]);
+
+  // Viewers keep asking the host for an offer until video arrives
+  useEffect(() => {
+    if (isHost || remoteStream) return;
+    const id = window.setInterval(() => {
+      void send('viewer-join', { from: selfId });
+    }, 4000);
+    return () => clearInterval(id);
+  }, [isHost, remoteStream, send, selfId]);
+
 
   // Clean up on page hide
   useEffect(() => {
@@ -286,16 +327,33 @@ const LiveCeremonyView = ({
       {/* Video / placeholder */}
       <div className="absolute inset-0">
         {showVideo ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted={isHost}
-            className={`w-full h-full object-cover ${
-              isHost && facing === 'user' ? 'scale-x-[-1]' : ''
-            }`}
-          />
+          <>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted={isHost}
+              className={`w-full h-full object-cover ${
+                isHost && facing === 'user' ? 'scale-x-[-1]' : ''
+              }`}
+            />
+            {!isHost && needsUnmute && (
+              <button
+                onClick={() => {
+                  if (videoRef.current) {
+                    videoRef.current.muted = false;
+                    void videoRef.current.play();
+                  }
+                  setNeedsUnmute(false);
+                }}
+                className="absolute top-20 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-amber-500 text-black text-sm font-semibold shadow-lg"
+              >
+                Tap to unmute
+              </button>
+            )}
+          </>
         ) : isHost && perm === 'denied' ? (
+
           <div className="w-full h-full flex flex-col items-center justify-center px-6 text-center bg-gradient-to-b from-[#3a1f14] to-black">
             <Coffee size={56} className="mb-4 text-amber-400" />
             <h2 className="text-xl font-semibold mb-2">Camera & microphone needed</h2>
@@ -327,15 +385,25 @@ const LiveCeremonyView = ({
             <p className="text-sm text-white/70">Requesting camera & mic…</p>
           </div>
         ) : (
-          // Viewer placeholder while connecting
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#2a140a] via-black to-black">
-            <div className="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 animate-pulse">
-              <Coffee size={44} className="text-amber-400" />
+          // Viewer: keep the video element mounted, overlay a waiting state
+          <div className="w-full h-full relative bg-gradient-to-b from-[#2a140a] via-black to-black">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 animate-pulse">
+                <Coffee size={44} className="text-amber-400" />
+              </div>
+              <p className="text-lg font-semibold">{hostName || 'Host'} is live</p>
+              <p className="text-sm text-white/60 mt-1">Waiting for host video… ☕</p>
             </div>
-            <p className="text-lg font-semibold">{hostName || 'Host'} is live</p>
-            <p className="text-sm text-white/60 mt-1">Connecting to the ceremony… ☕</p>
           </div>
         )}
+
         {/* subtle vignette */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70" />
       </div>

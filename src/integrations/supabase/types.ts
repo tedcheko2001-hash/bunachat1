@@ -38,6 +38,36 @@ export type Database = {
         }
         Relationships: []
       }
+      call_history: {
+        Row: {
+          callee_id: string
+          caller_id: string
+          created_at: string
+          duration_seconds: number
+          id: string
+          status: string
+          video: boolean
+        }
+        Insert: {
+          callee_id: string
+          caller_id: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          status?: string
+          video?: boolean
+        }
+        Update: {
+          callee_id?: string
+          caller_id?: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          status?: string
+          video?: boolean
+        }
+        Relationships: []
+      }
       ceremonies: {
         Row: {
           created_at: string

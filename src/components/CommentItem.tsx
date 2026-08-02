@@ -28,6 +28,8 @@ interface Props {
   comment: CommentNode;
   profiles: Record<string, CommentProfile>;
   currentUserId: string | null;
+  /** commentId -> round label (Abol / Bereka / Tona), computed per post */
+  labels?: Record<string, string>;
   onReply: (parent: CommentNode) => void;
   onLike: (comment: CommentNode) => void;
   onDelete: (comment: CommentNode) => void;
@@ -35,12 +37,11 @@ interface Props {
   depth?: number;
 }
 
-const rounds = ['', 'Abol', 'Bereka', 'Tona'];
-
 const CommentItem = ({
   comment,
   profiles,
   currentUserId,
+  labels,
   onReply,
   onLike,
   onDelete,
@@ -55,10 +56,8 @@ const CommentItem = ({
 
   const profile = profiles[comment.user_id];
   const isMine = currentUserId === comment.user_id;
-  const isTopLevel = !comment.parent_id;
-  const roundLabel = isTopLevel && comment.comment_order >= 1 && comment.comment_order <= 3
-    ? rounds[comment.comment_order]
-    : '';
+  const roundLabel = labels?.[comment.id] || '';
+
 
   const goToProfile = () => {
     if (!currentUserId) return;
@@ -202,6 +201,7 @@ const CommentItem = ({
                   onLike={onLike}
                   onDelete={onDelete}
                   onEdit={onEdit}
+                  labels={labels}
                   depth={depth + 1}
                 />
               ))}

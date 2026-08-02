@@ -94,8 +94,19 @@ const CallOverlay = ({ call, localStream, remoteStream, onAccept, onDecline, onE
     }
   };
 
-  const mmss = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
-  const showRemoteVideo = call.video && !!remoteStream;
+  const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  const mmss = fmt(seconds);
+  const ended = call.status === 'ended';
+  const showRemoteVideo = call.video && !!remoteStream && !ended;
+  const endedTitle =
+    call.endReason === 'declined'
+      ? 'Call declined'
+      : call.endReason === 'missed'
+        ? 'Call not answered'
+        : call.endReason === 'failed'
+          ? 'Call failed'
+          : 'Call ended';
+
 
   return (
     <div className="fixed inset-0 z-[120] flex flex-col bg-[hsl(var(--coffee-dark,20_40%_8%))] text-white">
@@ -141,9 +152,14 @@ const CallOverlay = ({ call, localStream, remoteStream, onAccept, onDecline, onE
         <div className={showRemoteVideo ? 'absolute top-4 left-4 text-left' : ''}>
           <h2 className="text-2xl font-semibold drop-shadow">{call.peerName}</h2>
           <p className="text-sm text-white/70 mt-1">
-            {call.status === 'active' ? mmss : statusText(call)}
+            {ended
+              ? `${endedTitle}${call.duration ? ` · ${fmt(call.duration)}` : ''}`
+              : call.status === 'active'
+                ? mmss
+                : statusText(call)}
           </p>
         </div>
+
 
         {/* Local preview */}
         {call.video && localStream && (
@@ -159,7 +175,10 @@ const CallOverlay = ({ call, localStream, remoteStream, onAccept, onDecline, onE
 
       {/* Controls */}
       <div className="relative z-10 pb-10 px-6">
-        {call.status === 'incoming' ? (
+        {ended ? (
+          <p className="text-center text-white/60 text-sm">Returning to chat…</p>
+        ) : call.status === 'incoming' ? (
+
           <div className="flex items-center justify-around">
             <button
               onClick={onDecline}
