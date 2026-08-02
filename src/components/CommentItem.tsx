@@ -201,6 +201,7 @@ const CommentItem = ({
                   onLike={onLike}
                   onDelete={onDelete}
                   onEdit={onEdit}
+                  labels={labels}
                   depth={depth + 1}
                 />
               ))}
