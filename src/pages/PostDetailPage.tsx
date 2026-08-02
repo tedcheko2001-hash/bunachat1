@@ -136,6 +136,25 @@ const PostDetailPage = () => {
 
   const totalComments = rows.length;
 
+  /**
+   * Coffee-round naming, per post: the 1st commenter is "Abol", the 2nd "Bereka",
+   * the 3rd "Tona"; everyone after that is unnamed. Labels follow the commenter,
+   * so their later comments keep the same round name.
+   */
+  const roundLabels = useMemo<Record<string, string>>(() => {
+    const names = ['Abol', 'Bereka', 'Tona'];
+    const byUser: Record<string, string> = {};
+    const map: Record<string, string> = {};
+    rows.forEach((r) => {
+      if (!(r.user_id in byUser)) {
+        byUser[r.user_id] = Object.keys(byUser).length < 3 ? names[Object.keys(byUser).length] : '';
+      }
+      if (byUser[r.user_id]) map[r.id] = byUser[r.user_id];
+    });
+    return map;
+  }, [rows]);
+
+
   const checkLikeStatus = async () => {
     if (!user || !id) return;
     const { data: likesRows } = await supabase.from('likes').select('id, user_id').eq('post_id', id);
