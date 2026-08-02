@@ -94,6 +94,17 @@ const HomePage = () => {
   };
 
 
+  const handleDeletePost = async (postId: string) => {
+    if (!user) return;
+    if (!window.confirm('Delete this post? This cannot be undone.')) return;
+    const { error } = await supabase.from('posts').delete().eq('id', postId).eq('user_id', user.id);
+    if (error) {
+      toast.error('Could not delete post');
+      return;
+    }
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+    toast.success('Post deleted');
+  };
 
 
   const handleAddPostImages = (files: FileList | null) => {
