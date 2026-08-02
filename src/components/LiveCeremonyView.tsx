@@ -327,16 +327,33 @@ const LiveCeremonyView = ({
       {/* Video / placeholder */}
       <div className="absolute inset-0">
         {showVideo ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted={isHost}
-            className={`w-full h-full object-cover ${
-              isHost && facing === 'user' ? 'scale-x-[-1]' : ''
-            }`}
-          />
+          <>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted={isHost}
+              className={`w-full h-full object-cover ${
+                isHost && facing === 'user' ? 'scale-x-[-1]' : ''
+              }`}
+            />
+            {!isHost && needsUnmute && (
+              <button
+                onClick={() => {
+                  if (videoRef.current) {
+                    videoRef.current.muted = false;
+                    void videoRef.current.play();
+                  }
+                  setNeedsUnmute(false);
+                }}
+                className="absolute top-20 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-amber-500 text-black text-sm font-semibold shadow-lg"
+              >
+                Tap to unmute
+              </button>
+            )}
+          </>
         ) : isHost && perm === 'denied' ? (
+
           <div className="w-full h-full flex flex-col items-center justify-center px-6 text-center bg-gradient-to-b from-[#3a1f14] to-black">
             <Coffee size={56} className="mb-4 text-amber-400" />
             <h2 className="text-xl font-semibold mb-2">Camera & microphone needed</h2>
