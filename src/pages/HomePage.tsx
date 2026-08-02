@@ -17,7 +17,7 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 import {
   MessageCircle, Coffee, Newspaper, Briefcase,
   ChevronRight, Plus, Image as ImageIcon, MessageSquare, Search, X,
-  Globe, Users, Lock,
+  Globe, Users, Lock, Trash2,
 } from 'lucide-react';
 
 type Visibility = 'public' | 'friends' | 'private';
