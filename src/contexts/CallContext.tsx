@@ -49,6 +49,8 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   const pendingOfferRef = useRef<{ sdp: any; video: boolean } | null>(null);
   const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
   const ringRef = useRef<{ ctx: AudioContext; timer: number } | null>(null);
+  const startedAtRef = useRef<number | null>(null);
+  const endTimerRef = useRef<number | null>(null);
 
   /* ---------------- ringtone / vibration ---------------- */
   const startRing = useCallback(() => {
