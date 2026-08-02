@@ -175,7 +175,10 @@ const CallOverlay = ({ call, localStream, remoteStream, onAccept, onDecline, onE
 
       {/* Controls */}
       <div className="relative z-10 pb-10 px-6">
-        {call.status === 'incoming' ? (
+        {ended ? (
+          <p className="text-center text-white/60 text-sm">Returning to chat…</p>
+        ) : call.status === 'incoming' ? (
+
           <div className="flex items-center justify-around">
             <button
               onClick={onDecline}
