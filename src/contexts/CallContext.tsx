@@ -182,16 +182,20 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
       };
       pc.ontrack = (e) => {
         setRemoteStream(e.streams[0]);
+        if (!startedAtRef.current) startedAtRef.current = Date.now();
         setCall((c) => (c ? { ...c, status: 'active' } : c));
       };
       pc.onconnectionstatechange = () => {
+        console.log('[call] connection state:', pc.connectionState);
         if (pc.connectionState === 'connected') {
+          if (!startedAtRef.current) startedAtRef.current = Date.now();
           setCall((c) => (c ? { ...c, status: 'active' } : c));
         }
-        if (['failed', 'disconnected', 'closed'].includes(pc.connectionState)) {
-          setCall((c) => (c && c.status === 'active' ? { ...c, status: 'ended' } : c));
+        if (pc.connectionState === 'failed') {
+          finishCall('failed');
         }
       };
+
       pcRef.current = pc;
       return pc;
     },
