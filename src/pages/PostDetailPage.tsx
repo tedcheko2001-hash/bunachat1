@@ -291,6 +291,7 @@ const PostDetailPage = () => {
                 key={n.id}
                 comment={n}
                 profiles={commentProfiles}
+                labels={roundLabels}
                 currentUserId={user?.id || null}
                 onReply={handleReply}
                 onLike={handleLikeComment}
