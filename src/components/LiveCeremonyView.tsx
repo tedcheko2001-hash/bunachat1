@@ -88,20 +88,28 @@ const LiveCeremonyView = ({
   /* ---------- host: create a peer connection per viewer ---------- */
   const createHostPeer = useCallback(
     async (viewerId: string) => {
-      if (!streamRef.current) return;
+      const stream = streamRef.current;
+      if (!stream) return;
+      const liveTracks = stream.getTracks().filter((t) => t.readyState === 'live');
+      if (liveTracks.length === 0) return;
       hostPeersRef.current[viewerId]?.close();
       const pc = new RTCPeerConnection(ICE_SERVERS);
       hostPeersRef.current[viewerId] = pc;
-      streamRef.current.getTracks().forEach((t) => pc.addTrack(t, streamRef.current!));
+      // add every active track BEFORE creating the offer
+      liveTracks.forEach((t) => pc.addTrack(t, stream));
+      pc.oniceconnectionstatechange = () => {
+        console.log('[live] host ICE state', viewerId, pc.iceConnectionState);
+      };
       pc.onicecandidate = (e) => {
         if (e.candidate) void send('live-ice', { to: viewerId, from: selfId, candidate: e.candidate.toJSON() });
       };
-      const offer = await pc.createOffer();
+      const offer = await pc.createOffer({ offerToReceiveAudio: false, offerToReceiveVideo: false });
       await pc.setLocalDescription(offer);
       await send('live-offer', { to: viewerId, from: selfId, sdp: pc.localDescription });
     },
     [selfId, send],
   );
+
 
   /* ---------- media capture (host) ---------- */
   const startStream = useCallback(
