@@ -124,9 +124,40 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [stopRing]);
 
+  /** Finish a call: stop media, log history, show the "Call ended" screen briefly. */
+  const finishCall = useCallback(
+    (reason: 'answered' | 'declined' | 'missed' | 'failed') => {
+      const started = startedAtRef.current;
+      const duration = started ? Math.round((Date.now() - started) / 1000) : 0;
+      startedAtRef.current = null;
+      cleanup();
+      setCall((c) => {
+        if (!c) return null;
+        // only one side writes the history row to avoid duplicates
+        if (user && c.role === 'caller') {
+          void (supabase as any).from('call_history').insert({
+            caller_id: user.id,
+            callee_id: c.peerId,
+            video: c.video,
+            duration_seconds: duration,
+            status: reason,
+          });
+        }
+        return { ...c, status: 'ended', duration, endReason: reason };
+      });
+      if (endTimerRef.current) clearTimeout(endTimerRef.current);
+      endTimerRef.current = window.setTimeout(() => {
+        setCall(null);
+        endTimerRef.current = null;
+      }, 2500);
+    },
+    [cleanup, user],
+  );
+
   const endCall = useCallback(
     async (notify = true) => {
       const peerId = call?.peerId;
+      const wasActive = call?.status === 'active' || !!startedAtRef.current;
       if (notify && peerId) {
         try {
           await signal(peerId, 'call-end', {});
@@ -134,11 +165,11 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
           /* ignore */
         }
       }
-      cleanup();
-      setCall(null);
+      finishCall(wasActive ? 'answered' : 'missed');
     },
-    [call?.peerId, signal, cleanup],
+    [call?.peerId, call?.status, signal, finishCall],
   );
+
 
   /* ---------------- peer connection ---------------- */
   const createPc = useCallback(
