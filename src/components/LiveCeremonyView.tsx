@@ -231,13 +231,35 @@ const LiveCeremonyView = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ceremonyId, selfId, isHost]);
 
-  // Attach remote stream for viewers
+  // Attach remote stream for viewers (muted first so autoplay is never blocked)
   useEffect(() => {
-    if (!isHost && videoRef.current && remoteStream) {
-      videoRef.current.srcObject = remoteStream;
-      videoRef.current.play().catch(() => {});
-    }
+    if (isHost || !remoteStream) return;
+    const el = videoRef.current;
+    if (!el) return;
+    el.srcObject = remoteStream;
+    el.muted = true;
+    el.play()
+      .then(async () => {
+        try {
+          el.muted = false;
+          await el.play();
+          setNeedsUnmute(false);
+        } catch {
+          setNeedsUnmute(true);
+        }
+      })
+      .catch(() => setNeedsUnmute(true));
   }, [remoteStream, isHost]);
+
+  // Viewers keep asking the host for an offer until video arrives
+  useEffect(() => {
+    if (isHost || remoteStream) return;
+    const id = window.setInterval(() => {
+      void send('viewer-join', { from: selfId });
+    }, 4000);
+    return () => clearInterval(id);
+  }, [isHost, remoteStream, send, selfId]);
+
 
   // Clean up on page hide
   useEffect(() => {
