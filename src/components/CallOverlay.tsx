@@ -94,8 +94,19 @@ const CallOverlay = ({ call, localStream, remoteStream, onAccept, onDecline, onE
     }
   };
 
-  const mmss = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
-  const showRemoteVideo = call.video && !!remoteStream;
+  const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  const mmss = fmt(seconds);
+  const ended = call.status === 'ended';
+  const showRemoteVideo = call.video && !!remoteStream && !ended;
+  const endedTitle =
+    call.endReason === 'declined'
+      ? 'Call declined'
+      : call.endReason === 'missed'
+        ? 'Call not answered'
+        : call.endReason === 'failed'
+          ? 'Call failed'
+          : 'Call ended';
+
 
   return (
     <div className="fixed inset-0 z-[120] flex flex-col bg-[hsl(var(--coffee-dark,20_40%_8%))] text-white">
