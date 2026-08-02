@@ -130,6 +130,30 @@ const RoomChatPage = () => {
     if (adminId) setAdminUserId(adminId as string);
   };
 
+  const handleGroupPicture = async (file: File | null) => {
+    if (!file || !roomId || !user) return;
+    setUploadingPic(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `rooms/${roomId}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+      const { error } = await supabase
+        .from('buna_rooms')
+        .update({ image_url: urlData.publicUrl })
+        .eq('id', roomId);
+      if (error) throw error;
+      setRoom((r) => (r ? { ...r, image_url: urlData.publicUrl } : r));
+      toast.success('Group picture updated');
+    } catch {
+      toast.error('Could not update group picture');
+    } finally {
+      setUploadingPic(false);
+    }
+  };
+
+
   const fetchMessages = async () => {
     if (!roomId) return;
     const { data } = await supabase
