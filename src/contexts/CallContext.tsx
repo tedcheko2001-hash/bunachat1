@@ -13,7 +13,11 @@ export interface CallState {
   video: boolean;
   role: 'caller' | 'callee';
   status: CallStatus;
+  /** seconds the call lasted — only set once status is 'ended' */
+  duration?: number;
+  endReason?: 'answered' | 'declined' | 'missed' | 'failed';
 }
+
 
 interface CallContextValue {
   call: CallState | null;
