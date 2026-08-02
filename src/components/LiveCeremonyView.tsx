@@ -68,6 +68,7 @@ const LiveCeremonyView = ({
   const [chatDraft, setChatDraft] = useState('');
   const [localChat, setLocalChat] = useState<ChatMsg[]>([]);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [needsUnmute, setNeedsUnmute] = useState(false);
 
   const send = useCallback(async (event: string, payload: Record<string, unknown>) => {
     await channelRef.current?.send({ type: 'broadcast', event, payload });
