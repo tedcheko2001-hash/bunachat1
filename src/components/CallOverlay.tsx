@@ -152,9 +152,14 @@ const CallOverlay = ({ call, localStream, remoteStream, onAccept, onDecline, onE
         <div className={showRemoteVideo ? 'absolute top-4 left-4 text-left' : ''}>
           <h2 className="text-2xl font-semibold drop-shadow">{call.peerName}</h2>
           <p className="text-sm text-white/70 mt-1">
-            {call.status === 'active' ? mmss : statusText(call)}
+            {ended
+              ? `${endedTitle}${call.duration ? ` · ${fmt(call.duration)}` : ''}`
+              : call.status === 'active'
+                ? mmss
+                : statusText(call)}
           </p>
         </div>
+
 
         {/* Local preview */}
         {call.video && localStream && (
