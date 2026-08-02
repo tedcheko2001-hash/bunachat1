@@ -341,13 +341,12 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
       })
       .on('broadcast', { event: 'call-decline' }, () => {
         toast('Call declined');
-        cleanup();
-        setCall(null);
+        finishCall('declined');
       })
       .on('broadcast', { event: 'call-end' }, () => {
-        cleanup();
-        setCall(null);
+        finishCall(startedAtRef.current ? 'answered' : 'missed');
       })
+
       .subscribe();
 
     return () => {
