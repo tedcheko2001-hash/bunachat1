@@ -199,7 +199,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
       pcRef.current = pc;
       return pc;
     },
-    [signal],
+    [signal, finishCall],
   );
 
   const getMedia = async (video: boolean) => {
