@@ -13,11 +13,13 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 
 interface Profile {
   name: string;
+  username: string | null;
   email: string | null;
   avatar_url: string | null;
   bio: string | null;
   is_verified: boolean;
 }
+
 
 const ProfilePage = () => {
   const navigate = useNavigate();
