@@ -233,6 +233,39 @@ const ProfilePage = () => {
                 </button>
               </div>
             )}
+            {editingUsername ? (
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="text"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  className="input-buna py-1 px-2 text-sm"
+                  placeholder="username"
+                  autoFocus
+                />
+                <button onClick={handleUpdateUsername} className="p-1 text-primary hover:bg-primary/10 rounded">
+                  <Check size={18} />
+                </button>
+                <button
+                  onClick={() => { setEditingUsername(false); setNewUsername(profile?.username || ''); }}
+                  className="p-1 text-muted-foreground hover:bg-muted rounded"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-sm text-primary">@{profile?.username || 'set-username'}</p>
+                <button
+                  onClick={() => setEditingUsername(true)}
+                  className="p-1 text-muted-foreground hover:text-primary transition-colors"
+                  aria-label="Edit username"
+                >
+                  <Edit2 size={14} />
+                </button>
+              </div>
+            )}
+
             <div className="flex items-center gap-2 text-muted-foreground mt-1">
               <Mail size={14} />
               <span className="text-sm">••••••@••••.•••</span>
