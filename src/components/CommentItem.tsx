@@ -7,9 +7,11 @@ import { timeAgo } from '@/lib/timeAgo';
 export interface CommentProfile {
   user_id: string;
   name: string;
+  username?: string | null;
   avatar_url: string | null;
   is_verified?: boolean;
 }
+
 
 export interface CommentNode {
   id: string;
