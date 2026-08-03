@@ -82,14 +82,15 @@ const HomePage = () => {
       if (userIds.length > 0) {
         const { data: profilesData } = await (supabase as any)
           .from('profiles_public')
-          .select('user_id, name, avatar_url, is_verified')
+          .select('user_id, name, username, avatar_url, is_verified')
           .in('user_id', userIds);
         if (profilesData) {
-          const map: Record<string, { name: string; avatar_url: string | null; is_verified?: boolean }> = {};
-          profilesData.forEach((p: any) => { map[p.user_id] = { name: p.name, avatar_url: p.avatar_url, is_verified: p.is_verified }; });
+          const map: Record<string, { name: string; username: string | null; avatar_url: string | null; is_verified?: boolean }> = {};
+          profilesData.forEach((p: any) => { map[p.user_id] = { name: p.name, username: p.username ?? null, avatar_url: p.avatar_url, is_verified: p.is_verified }; });
           setProfiles(map);
         }
       }
+
     }
   };
 
