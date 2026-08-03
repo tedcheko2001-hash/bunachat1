@@ -233,10 +233,15 @@ const CallOverlay = ({ call, localStream, remoteStream, onAccept, onDecline, onE
             )}
             <button
               onClick={onEnd}
-              className="w-16 h-12 rounded-full bg-[hsl(var(--buna-red))] flex items-center justify-center shadow-lg"
-              aria-label="End call"
+              className="flex flex-col items-center gap-1"
+              aria-label={call.status === 'active' ? 'End call' : 'Cancel call'}
             >
-              <PhoneOff size={22} />
+              <span className="w-16 h-12 rounded-full bg-[hsl(var(--buna-red))] flex items-center justify-center shadow-lg">
+                <PhoneOff size={22} />
+              </span>
+              <span className="text-[11px] text-white/80">
+                {call.status === 'active' ? 'End' : call.role === 'caller' ? 'Cancel' : 'Decline'}
+              </span>
             </button>
           </div>
         )}
