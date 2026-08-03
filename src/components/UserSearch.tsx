@@ -98,7 +98,11 @@ const UserSearch = ({ onClose, onSelectUser }: UserSearchProps) => {
                   <User size={20} className="text-primary" />
                 )}
               </div>
-              <span className="font-medium">{profile.name}</span>
+              <span className="min-w-0 text-left">
+                <span className="font-medium block truncate">{profile.name}</span>
+                {profile.username && <span className="text-xs text-primary block truncate">@{profile.username}</span>}
+              </span>
+
             </button>
           ))}
         </div>
