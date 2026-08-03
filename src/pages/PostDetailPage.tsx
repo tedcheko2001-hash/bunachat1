@@ -260,14 +260,28 @@ const PostDetailPage = () => {
                 <span className="text-primary font-bold text-lg">{postProfile?.name?.charAt(0) || 'U'}</span>
               )}
             </button>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <button onClick={openAuthor} className="flex items-center gap-1.5 hover:underline">
                 <p className="font-semibold">{postProfile?.name || 'User'}</p>
                 {postProfile?.is_verified && <VerifiedBadge size={16} />}
               </button>
+              {postProfile?.username && (
+                <button onClick={openAuthor} className="text-sm text-primary hover:underline block">
+                  @{postProfile.username}
+                </button>
+              )}
               <p className="text-sm text-muted-foreground">{timeAgo(post.created_at)}</p>
             </div>
+            {user && post.user_id !== user.id && (
+              <button
+                onClick={() => navigate(`/dm/${post.user_id}`)}
+                className="ml-auto px-3 py-2 rounded-xl bg-muted text-sm font-medium hover:bg-muted/70"
+              >
+                Message
+              </button>
+            )}
           </div>
+
 
           {post.content && <p className="mb-4 whitespace-pre-wrap">{post.content}</p>}
           {post.image_url && (
