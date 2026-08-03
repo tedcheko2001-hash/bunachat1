@@ -499,6 +499,11 @@ const LiveCeremonyView = ({
           <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 backdrop-blur text-xs">
             <Users size={12} /> {viewerCount}
           </span>
+          {!isHost && linkState === 'reconnecting' && !!remoteStream && (
+            <span className="px-2 py-1 rounded-full bg-amber-500/90 text-black text-xs font-semibold animate-pulse">
+              Reconnecting…
+            </span>
+          )}
         </div>
         <button
           onClick={handleEnd}
