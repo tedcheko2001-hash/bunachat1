@@ -28,7 +28,10 @@ const ProfilePage = () => {
   const [uploading, setUploading] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
   const [showAbout, setShowAbout] = useState(false);
+
 
   useEffect(() => {
     if (user) {
