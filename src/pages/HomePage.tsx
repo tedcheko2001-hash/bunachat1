@@ -290,21 +290,33 @@ const HomePage = () => {
             return (
               <div key={post.id} className="buna-card p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                  <button
+                    onClick={() => openUser(post.user_id)}
+                    className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden shrink-0"
+                    aria-label={`Open ${profile?.name || 'user'} profile`}
+                  >
                     {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                      <img src={profile.avatar_url} alt={profile?.name || 'User avatar'} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-primary font-bold">{profile?.name?.charAt(0) || 'U'}</span>
                     )}
-                  </div>
-                  <div className="flex-1">
+                  </button>
+                  <div className="flex-1 min-w-0">
                     <button
-                      onClick={() => profile && user && (post.user_id === user.id ? navigate('/profile') : navigate(`/u/${post.user_id}`))}
-                      className="flex items-center gap-1.5 hover:underline"
+                      onClick={() => openUser(post.user_id)}
+                      className="flex items-center gap-1.5 hover:underline max-w-full"
                     >
-                      <p className="font-medium text-sm">{profile?.name || 'User'}</p>
+                      <p className="font-medium text-sm truncate">{profile?.name || 'User'}</p>
                       {profile?.is_verified && <VerifiedBadge size={14} />}
                     </button>
+                    {profile?.username && (
+                      <button
+                        onClick={() => openUser(post.user_id)}
+                        className="text-xs text-primary hover:underline block truncate"
+                      >
+                        @{profile.username}
+                      </button>
+                    )}
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       {new Date(post.created_at).toLocaleDateString()}
                       <span className="inline-flex items-center gap-1">
@@ -313,6 +325,16 @@ const HomePage = () => {
                       </span>
                     </p>
                   </div>
+                  {user?.id !== post.user_id && (
+                    <button
+                      onClick={() => navigate(`/dm/${post.user_id}`)}
+                      className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                      aria-label="Send message"
+                    >
+                      <MessageCircle size={18} />
+                    </button>
+                  )}
+
                   {user?.id === post.user_id && (
                     <button
                       onClick={() => handleDeletePost(post.id)}
