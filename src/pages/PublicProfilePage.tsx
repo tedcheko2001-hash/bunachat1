@@ -12,10 +12,12 @@ import { toast } from 'sonner';
 interface PublicProfile {
   user_id: string;
   name: string;
+  username: string | null;
   avatar_url: string | null;
   bio: string | null;
   is_verified: boolean;
 }
+
 
 const PublicProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -41,7 +43,7 @@ const PublicProfilePage = () => {
     if (!userId) return;
     const { data } = await (supabase as any)
       .from('profiles_public')
-      .select('user_id, name, avatar_url, bio, is_verified')
+      .select('user_id, name, username, avatar_url, bio, is_verified')
       .eq('user_id', userId)
       .maybeSingle();
     setProfile(data);
@@ -131,7 +133,9 @@ const PublicProfilePage = () => {
               <h2 className="text-xl font-semibold">{profile.name}</h2>
               {profile.is_verified && <VerifiedBadge size={18} />}
             </div>
+            {profile.username && <p className="text-sm text-primary">@{profile.username}</p>}
             {profile.bio && <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{profile.bio}</p>}
+
             <div className="flex gap-4 mt-3 text-sm">
               <span><strong>{followerCount}</strong> <span className="text-muted-foreground">followers</span></span>
               <span><strong>{followingCount}</strong> <span className="text-muted-foreground">following</span></span>

@@ -10,9 +10,11 @@ import { ArrowLeft, UserPlus, Check, X, UserMinus, Users, Sparkles } from 'lucid
 interface ProfileLite {
   user_id: string;
   name: string;
+  username?: string | null;
   avatar_url: string | null;
   is_verified?: boolean;
 }
+
 interface Friendship {
   id: string;
   requester_id: string;
@@ -50,7 +52,7 @@ const BunaEntetaPage = () => {
     if (otherIds.length) {
       const { data: profs } = await (supabase as any)
         .from('profiles_public')
-        .select('user_id, name, avatar_url, is_verified')
+        .select('user_id, name, username, avatar_url, is_verified')
         .in('user_id', otherIds);
       (profs || []).forEach((p: ProfileLite) => (profilesMap[p.user_id] = p));
     }
@@ -172,7 +174,7 @@ const BunaEntetaPage = () => {
               </p>
             )}
             {suggestions.map((p) => (
-              <div key={p.user_id} className="buna-card p-3 flex items-center gap-3">
+              <div key={p.user_id} className="buna-card p-3 flex items-center gap-2">
                 <button onClick={() => navigate(`/u/${p.user_id}`)} className="flex items-center gap-3 flex-1 min-w-0">
                   <Avatar p={p} />
                   <div className="flex-1 min-w-0 text-left">
@@ -180,8 +182,14 @@ const BunaEntetaPage = () => {
                       <p className="font-medium truncate">{p.name}</p>
                       {p.is_verified && <VerifiedBadge size={14} />}
                     </div>
-                    <p className="text-xs text-muted-foreground">New on Buna Chat</p>
+                    {p.username && <p className="text-xs text-primary truncate">@{p.username}</p>}
                   </div>
+                </button>
+                <button
+                  onClick={() => navigate(`/dm/${p.user_id}`)}
+                  className="px-3 py-2 rounded-xl bg-muted text-sm font-medium hover:bg-muted/70"
+                >
+                  Message
                 </button>
                 <button
                   onClick={() => sendRequest(p.user_id, p.name)}
@@ -190,6 +198,7 @@ const BunaEntetaPage = () => {
                   <UserPlus size={14} /> Connect
                 </button>
               </div>
+
             ))}
           </>
         )}
@@ -200,7 +209,7 @@ const BunaEntetaPage = () => {
               <p className="text-center text-muted-foreground py-8">No pending requests</p>
             )}
             {requests.map((r) => (
-              <div key={r.id} className="buna-card p-3 flex items-center gap-3">
+              <div key={r.id} className="buna-card p-3 flex items-center gap-2">
                 <button onClick={() => navigate(`/u/${r.profile.user_id}`)} className="flex items-center gap-3 flex-1 min-w-0">
                   <Avatar p={r.profile} />
                   <div className="text-left flex-1 min-w-0">
@@ -208,8 +217,15 @@ const BunaEntetaPage = () => {
                       <p className="font-medium truncate">{r.profile.name}</p>
                       {r.profile.is_verified && <VerifiedBadge size={14} />}
                     </div>
+                    {r.profile.username && <p className="text-xs text-primary truncate">@{r.profile.username}</p>}
                     <p className="text-xs text-muted-foreground">wants to connect</p>
                   </div>
+                </button>
+                <button
+                  onClick={() => navigate(`/dm/${r.profile.user_id}`)}
+                  className="px-3 py-2 rounded-xl bg-muted text-sm font-medium hover:bg-muted/70"
+                >
+                  Message
                 </button>
                 <button
                   onClick={() => respond(r.id, true)}
@@ -226,6 +242,7 @@ const BunaEntetaPage = () => {
                   <X size={16} />
                 </button>
               </div>
+
             ))}
           </>
         )}
@@ -246,9 +263,11 @@ const BunaEntetaPage = () => {
                       <p className="font-medium truncate">{f.profile.name}</p>
                       {f.profile.is_verified && <VerifiedBadge size={14} />}
                     </div>
+                    {f.profile.username && <p className="text-xs text-primary truncate">@{f.profile.username}</p>}
                     <p className="text-xs text-muted-foreground">Buna Enteta friend</p>
                   </div>
                 </button>
+
                 <button
                   onClick={() => navigate(`/dm/${f.profile.user_id}`)}
                   className="px-3 py-2 rounded-xl bg-muted text-sm font-medium hover:bg-muted/70"

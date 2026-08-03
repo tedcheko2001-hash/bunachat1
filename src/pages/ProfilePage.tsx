@@ -13,11 +13,13 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 
 interface Profile {
   name: string;
+  username: string | null;
   email: string | null;
   avatar_url: string | null;
   bio: string | null;
   is_verified: boolean;
 }
+
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -26,7 +28,10 @@ const ProfilePage = () => {
   const [uploading, setUploading] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
   const [showAbout, setShowAbout] = useState(false);
+
 
   useEffect(() => {
     if (user) {
@@ -44,22 +49,26 @@ const ProfilePage = () => {
       .maybeSingle();
 
     if (!error && data) {
-      setProfile(data);
+      setProfile(data as any);
       setNewName(data.name);
+      setNewUsername(((data as any).username as string) || '');
     } else if (!data) {
+      const base = (user.email?.split('@')[0] || 'buna').toLowerCase().replace(/[^a-z0-9_]/g, '') || 'buna';
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
         .insert({
           user_id: user.id,
           name: user.email?.split('@')[0] || 'User',
           email: user.email,
-        })
+          username: `${base}${Math.floor(Math.random() * 9000 + 1000)}`,
+        } as any)
         .select()
         .single();
-      
+
       if (!createError && newProfile) {
-        setProfile(newProfile);
+        setProfile(newProfile as any);
         setNewName(newProfile.name);
+        setNewUsername(((newProfile as any).username as string) || '');
       }
     }
   };
@@ -80,6 +89,28 @@ const ProfilePage = () => {
       fetchProfile();
     }
   };
+
+  const handleUpdateUsername = async () => {
+    if (!user) return;
+    const clean = newUsername.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    if (clean.length < 3) {
+      toast.error('Username must be at least 3 characters (letters, numbers, _)');
+      return;
+    }
+    const { error } = await supabase
+      .from('profiles')
+      .update({ username: clean } as any)
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast.error(error.message.includes('duplicate') ? 'That username is taken' : 'Failed to update username');
+    } else {
+      toast.success('Username updated!');
+      setEditingUsername(false);
+      fetchProfile();
+    }
+  };
+
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -202,6 +233,39 @@ const ProfilePage = () => {
                 </button>
               </div>
             )}
+            {editingUsername ? (
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="text"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  className="input-buna py-1 px-2 text-sm"
+                  placeholder="username"
+                  autoFocus
+                />
+                <button onClick={handleUpdateUsername} className="p-1 text-primary hover:bg-primary/10 rounded">
+                  <Check size={18} />
+                </button>
+                <button
+                  onClick={() => { setEditingUsername(false); setNewUsername(profile?.username || ''); }}
+                  className="p-1 text-muted-foreground hover:bg-muted rounded"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-sm text-primary">@{profile?.username || 'set-username'}</p>
+                <button
+                  onClick={() => setEditingUsername(true)}
+                  className="p-1 text-muted-foreground hover:text-primary transition-colors"
+                  aria-label="Edit username"
+                >
+                  <Edit2 size={14} />
+                </button>
+              </div>
+            )}
+
             <div className="flex items-center gap-2 text-muted-foreground mt-1">
               <Mail size={14} />
               <span className="text-sm">••••••@••••.•••</span>

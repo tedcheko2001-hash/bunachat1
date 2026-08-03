@@ -472,6 +472,7 @@ export type Database = {
           name: string
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -483,6 +484,7 @@ export type Database = {
           name: string
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -494,6 +496,7 @@ export type Database = {
           name?: string
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -829,6 +832,7 @@ export type Database = {
           name: string | null
           updated_at: string | null
           user_id: string | null
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -839,6 +843,7 @@ export type Database = {
           name?: string | null
           updated_at?: string | null
           user_id?: string | null
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -849,6 +854,7 @@ export type Database = {
           name?: string | null
           updated_at?: string | null
           user_id?: string | null
+          username?: string | null
         }
         Relationships: []
       }
@@ -880,6 +886,7 @@ export type Database = {
           is_verified: boolean
           name: string
           user_id: string
+          username: string
         }[]
       }
       get_room_admin: { Args: { _room: string }; Returns: string }

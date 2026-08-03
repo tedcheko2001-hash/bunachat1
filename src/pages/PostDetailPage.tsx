@@ -63,9 +63,10 @@ const PostDetailPage = () => {
       setPost(data);
       const { data: p } = await (supabase as any)
         .from('profiles_public')
-        .select('user_id, name, avatar_url, is_verified')
+        .select('user_id, name, username, avatar_url, is_verified')
         .eq('user_id', data.user_id)
         .single();
+
       if (p) setPostProfile(p);
     }
     setLoading(false);
@@ -85,8 +86,9 @@ const PostDetailPage = () => {
     if (userIds.length) {
       const { data: profs } = await (supabase as any)
         .from('profiles_public')
-        .select('user_id, name, avatar_url, is_verified')
+        .select('user_id, name, username, avatar_url, is_verified')
         .in('user_id', userIds);
+
       const map: Record<string, CommentProfile> = {};
       (profs || []).forEach((p: any) => { map[p.user_id] = p; });
       setCommentProfiles(map);
@@ -258,14 +260,28 @@ const PostDetailPage = () => {
                 <span className="text-primary font-bold text-lg">{postProfile?.name?.charAt(0) || 'U'}</span>
               )}
             </button>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <button onClick={openAuthor} className="flex items-center gap-1.5 hover:underline">
                 <p className="font-semibold">{postProfile?.name || 'User'}</p>
                 {postProfile?.is_verified && <VerifiedBadge size={16} />}
               </button>
+              {postProfile?.username && (
+                <button onClick={openAuthor} className="text-sm text-primary hover:underline block">
+                  @{postProfile.username}
+                </button>
+              )}
               <p className="text-sm text-muted-foreground">{timeAgo(post.created_at)}</p>
             </div>
+            {user && post.user_id !== user.id && (
+              <button
+                onClick={() => navigate(`/dm/${post.user_id}`)}
+                className="ml-auto px-3 py-2 rounded-xl bg-muted text-sm font-medium hover:bg-muted/70"
+              >
+                Message
+              </button>
+            )}
           </div>
+
 
           {post.content && <p className="mb-4 whitespace-pre-wrap">{post.content}</p>}
           {post.image_url && (

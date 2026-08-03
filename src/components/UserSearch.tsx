@@ -6,8 +6,10 @@ import { Search, User, X } from 'lucide-react';
 interface Profile {
   user_id: string;
   name: string;
+  username: string | null;
   avatar_url: string | null;
 }
+
 
 interface UserSearchProps {
   onClose?: () => void;
@@ -30,8 +32,8 @@ const UserSearch = ({ onClose, onSelectUser }: UserSearchProps) => {
       setLoading(true);
       const { data, error } = await (supabase as any)
         .from('profiles_public')
-        .select('user_id, name, avatar_url')
-        .ilike('name', `%${query}%`)
+        .select('user_id, name, username, avatar_url')
+        .or(`name.ilike.%${query}%,username.ilike.%${query}%`)
         .limit(10);
 
       if (!error && data) {
@@ -48,10 +50,11 @@ const UserSearch = ({ onClose, onSelectUser }: UserSearchProps) => {
     if (onSelectUser) {
       onSelectUser(userId);
     } else {
-      navigate('/chat');
+      navigate(`/u/${userId}`);
     }
     onClose?.();
   };
+
 
   return (
     <div className="buna-card p-4">
@@ -62,7 +65,7 @@ const UserSearch = ({ onClose, onSelectUser }: UserSearchProps) => {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search users by name..."
+            placeholder="Search by name or @username..."
             className="input-buna pl-10"
             autoFocus
           />
@@ -95,7 +98,11 @@ const UserSearch = ({ onClose, onSelectUser }: UserSearchProps) => {
                   <User size={20} className="text-primary" />
                 )}
               </div>
-              <span className="font-medium">{profile.name}</span>
+              <span className="min-w-0 text-left">
+                <span className="font-medium block truncate">{profile.name}</span>
+                {profile.username && <span className="text-xs text-primary block truncate">@{profile.username}</span>}
+              </span>
+
             </button>
           ))}
         </div>
