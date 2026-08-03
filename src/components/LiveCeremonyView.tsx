@@ -69,6 +69,9 @@ const LiveCeremonyView = ({
   const [localChat, setLocalChat] = useState<ChatMsg[]>([]);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [needsUnmute, setNeedsUnmute] = useState(false);
+  /** viewer-side link health */
+  const [linkState, setLinkState] = useState<'connecting' | 'live' | 'reconnecting' | 'failed'>('connecting');
+  const [retryCount, setRetryCount] = useState(0);
 
   const send = useCallback(async (event: string, payload: Record<string, unknown>) => {
     await channelRef.current?.send({ type: 'broadcast', event, payload });
