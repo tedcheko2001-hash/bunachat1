@@ -63,9 +63,10 @@ const PostDetailPage = () => {
       setPost(data);
       const { data: p } = await (supabase as any)
         .from('profiles_public')
-        .select('user_id, name, avatar_url, is_verified')
+        .select('user_id, name, username, avatar_url, is_verified')
         .eq('user_id', data.user_id)
         .single();
+
       if (p) setPostProfile(p);
     }
     setLoading(false);
