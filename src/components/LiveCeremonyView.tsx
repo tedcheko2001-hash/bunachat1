@@ -168,12 +168,30 @@ const LiveCeremonyView = ({
         pc.ontrack = (e) => {
           const stream = e.streams[0] || new MediaStream([e.track]);
           setRemoteStream(stream);
+          setLinkState('live');
         };
         pc.oniceconnectionstatechange = () => {
           console.log('[live] viewer ICE state:', pc.iceConnectionState);
+          if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+            setLinkState('live');
+          }
+          if (pc.iceConnectionState === 'disconnected') {
+            setLinkState('reconnecting');
+          }
+          if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'closed') {
+            // drop the dead stream so the retry loop kicks in with a clear status
+            setRemoteStream(null);
+            setLinkState('reconnecting');
+          }
         };
         pc.onconnectionstatechange = () => {
           console.log('[live] viewer connection state:', pc.connectionState);
+          if (pc.connectionState === 'connected') setLinkState('live');
+          if (pc.connectionState === 'disconnected') setLinkState('reconnecting');
+          if (pc.connectionState === 'failed') {
+            setRemoteStream(null);
+            setLinkState('reconnecting');
+          }
         };
         pc.onicecandidate = (e) => {
           if (e.candidate)
