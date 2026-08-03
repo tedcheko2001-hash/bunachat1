@@ -65,7 +65,7 @@ const UserSearch = ({ onClose, onSelectUser }: UserSearchProps) => {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search users by name..."
+            placeholder="Search by name or @username..."
             className="input-buna pl-10"
             autoFocus
           />
