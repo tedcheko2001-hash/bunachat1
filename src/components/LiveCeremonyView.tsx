@@ -69,6 +69,9 @@ const LiveCeremonyView = ({
   const [localChat, setLocalChat] = useState<ChatMsg[]>([]);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [needsUnmute, setNeedsUnmute] = useState(false);
+  /** viewer-side link health */
+  const [linkState, setLinkState] = useState<'connecting' | 'live' | 'reconnecting' | 'failed'>('connecting');
+  const [retryCount, setRetryCount] = useState(0);
 
   const send = useCallback(async (event: string, payload: Record<string, unknown>) => {
     await channelRef.current?.send({ type: 'broadcast', event, payload });
@@ -165,12 +168,30 @@ const LiveCeremonyView = ({
         pc.ontrack = (e) => {
           const stream = e.streams[0] || new MediaStream([e.track]);
           setRemoteStream(stream);
+          setLinkState('live');
         };
         pc.oniceconnectionstatechange = () => {
           console.log('[live] viewer ICE state:', pc.iceConnectionState);
+          if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+            setLinkState('live');
+          }
+          if (pc.iceConnectionState === 'disconnected') {
+            setLinkState('reconnecting');
+          }
+          if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'closed') {
+            // drop the dead stream so the retry loop kicks in with a clear status
+            setRemoteStream(null);
+            setLinkState('reconnecting');
+          }
         };
         pc.onconnectionstatechange = () => {
           console.log('[live] viewer connection state:', pc.connectionState);
+          if (pc.connectionState === 'connected') setLinkState('live');
+          if (pc.connectionState === 'disconnected') setLinkState('reconnecting');
+          if (pc.connectionState === 'failed') {
+            setRemoteStream(null);
+            setLinkState('reconnecting');
+          }
         };
         pc.onicecandidate = (e) => {
           if (e.candidate)
@@ -252,14 +273,55 @@ const LiveCeremonyView = ({
       .catch(() => setNeedsUnmute(true));
   }, [remoteStream, isHost]);
 
-  // Viewers keep asking the host for an offer until video arrives
+  // Viewers keep asking the host for a fresh offer until video (re)arrives
   useEffect(() => {
-    if (isHost || remoteStream) return;
+    if (isHost || remoteStream || linkState === 'failed') return;
+    void send('viewer-join', { from: selfId });
     const id = window.setInterval(() => {
-      void send('viewer-join', { from: selfId });
+      setRetryCount((n) => {
+        const next = n + 1;
+        if (next > 12) {
+          setLinkState('failed');
+          return n;
+        }
+        void send('viewer-join', { from: selfId });
+        return next;
+      });
     }, 4000);
     return () => clearInterval(id);
-  }, [isHost, remoteStream, send, selfId]);
+  }, [isHost, remoteStream, linkState, send, selfId]);
+
+  // Reset the retry counter once video is flowing again
+  useEffect(() => {
+    if (remoteStream) setRetryCount(0);
+  }, [remoteStream]);
+
+  // Detect a silently dropped video track (host camera off / network death)
+  useEffect(() => {
+    if (isHost || !remoteStream) return;
+    const track = remoteStream.getVideoTracks()[0];
+    if (!track) return;
+    const onDead = () => {
+      setRemoteStream(null);
+      setLinkState('reconnecting');
+    };
+    track.addEventListener('ended', onDead);
+    track.addEventListener('mute', onDead);
+    return () => {
+      track.removeEventListener('ended', onDead);
+      track.removeEventListener('mute', onDead);
+    };
+  }, [remoteStream, isHost]);
+
+  const retryNow = useCallback(() => {
+    setRetryCount(0);
+    setRemoteStream(null);
+    viewerPcRef.current?.close();
+    viewerPcRef.current = null;
+    setLinkState('reconnecting');
+    void send('viewer-join', { from: selfId });
+  }, [send, selfId]);
+
 
 
   // Clean up on page hide
@@ -385,7 +447,7 @@ const LiveCeremonyView = ({
             <p className="text-sm text-white/70">Requesting camera & mic…</p>
           </div>
         ) : (
-          // Viewer: keep the video element mounted, overlay a waiting state
+          // Viewer: keep the video element mounted, overlay a clear connection status
           <div className="w-full h-full relative bg-gradient-to-b from-[#2a140a] via-black to-black">
             <video
               ref={videoRef}
@@ -394,15 +456,34 @@ const LiveCeremonyView = ({
               muted
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 animate-pulse">
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+              <div
+                className={`w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 ${
+                  linkState === 'failed' ? '' : 'animate-pulse'
+                }`}
+              >
                 <Coffee size={44} className="text-amber-400" />
               </div>
               <p className="text-lg font-semibold">{hostName || 'Host'} is live</p>
-              <p className="text-sm text-white/60 mt-1">Waiting for host video… ☕</p>
+              <p className="text-sm text-white/60 mt-1">
+                {linkState === 'failed'
+                  ? "Couldn't connect to the host's video"
+                  : linkState === 'reconnecting'
+                    ? `Connection lost — reconnecting…${retryCount ? ` (attempt ${retryCount})` : ''}`
+                    : `Connecting to host video…${retryCount ? ` (attempt ${retryCount})` : ''} ☕`}
+              </p>
+              {(linkState === 'failed' || retryCount >= 2) && (
+                <button
+                  onClick={retryNow}
+                  className="mt-4 px-4 py-2 rounded-full bg-amber-500 text-black text-sm font-semibold"
+                >
+                  Try again
+                </button>
+              )}
             </div>
           </div>
         )}
+
 
         {/* subtle vignette */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70" />
@@ -418,6 +499,11 @@ const LiveCeremonyView = ({
           <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 backdrop-blur text-xs">
             <Users size={12} /> {viewerCount}
           </span>
+          {!isHost && linkState === 'reconnecting' && !!remoteStream && (
+            <span className="px-2 py-1 rounded-full bg-amber-500/90 text-black text-xs font-semibold animate-pulse">
+              Reconnecting…
+            </span>
+          )}
         </div>
         <button
           onClick={handleEnd}
