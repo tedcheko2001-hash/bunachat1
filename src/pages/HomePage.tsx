@@ -94,6 +94,11 @@ const HomePage = () => {
     }
   };
 
+  const openUser = (userId: string) => {
+    if (user && userId === user.id) navigate('/profile');
+    else navigate(`/u/${userId}`);
+  };
+
 
   const handleDeletePost = async (postId: string) => {
     if (!user) return;
