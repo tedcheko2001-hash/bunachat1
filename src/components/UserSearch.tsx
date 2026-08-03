@@ -32,8 +32,8 @@ const UserSearch = ({ onClose, onSelectUser }: UserSearchProps) => {
       setLoading(true);
       const { data, error } = await (supabase as any)
         .from('profiles_public')
-        .select('user_id, name, avatar_url')
-        .ilike('name', `%${query}%`)
+        .select('user_id, name, username, avatar_url')
+        .or(`name.ilike.%${query}%,username.ilike.%${query}%`)
         .limit(10);
 
       if (!error && data) {
@@ -50,10 +50,11 @@ const UserSearch = ({ onClose, onSelectUser }: UserSearchProps) => {
     if (onSelectUser) {
       onSelectUser(userId);
     } else {
-      navigate('/chat');
+      navigate(`/u/${userId}`);
     }
     onClose?.();
   };
+
 
   return (
     <div className="buna-card p-4">
