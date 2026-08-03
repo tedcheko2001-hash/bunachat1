@@ -52,7 +52,7 @@ const BunaEntetaPage = () => {
     if (otherIds.length) {
       const { data: profs } = await (supabase as any)
         .from('profiles_public')
-        .select('user_id, name, avatar_url, is_verified')
+        .select('user_id, name, username, avatar_url, is_verified')
         .in('user_id', otherIds);
       (profs || []).forEach((p: ProfileLite) => (profilesMap[p.user_id] = p));
     }
