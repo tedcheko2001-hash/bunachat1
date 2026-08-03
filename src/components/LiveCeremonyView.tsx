@@ -273,14 +273,55 @@ const LiveCeremonyView = ({
       .catch(() => setNeedsUnmute(true));
   }, [remoteStream, isHost]);
 
-  // Viewers keep asking the host for an offer until video arrives
+  // Viewers keep asking the host for a fresh offer until video (re)arrives
   useEffect(() => {
-    if (isHost || remoteStream) return;
+    if (isHost || remoteStream || linkState === 'failed') return;
+    void send('viewer-join', { from: selfId });
     const id = window.setInterval(() => {
-      void send('viewer-join', { from: selfId });
+      setRetryCount((n) => {
+        const next = n + 1;
+        if (next > 12) {
+          setLinkState('failed');
+          return n;
+        }
+        void send('viewer-join', { from: selfId });
+        return next;
+      });
     }, 4000);
     return () => clearInterval(id);
-  }, [isHost, remoteStream, send, selfId]);
+  }, [isHost, remoteStream, linkState, send, selfId]);
+
+  // Reset the retry counter once video is flowing again
+  useEffect(() => {
+    if (remoteStream) setRetryCount(0);
+  }, [remoteStream]);
+
+  // Detect a silently dropped video track (host camera off / network death)
+  useEffect(() => {
+    if (isHost || !remoteStream) return;
+    const track = remoteStream.getVideoTracks()[0];
+    if (!track) return;
+    const onDead = () => {
+      setRemoteStream(null);
+      setLinkState('reconnecting');
+    };
+    track.addEventListener('ended', onDead);
+    track.addEventListener('mute', onDead);
+    return () => {
+      track.removeEventListener('ended', onDead);
+      track.removeEventListener('mute', onDead);
+    };
+  }, [remoteStream, isHost]);
+
+  const retryNow = useCallback(() => {
+    setRetryCount(0);
+    setRemoteStream(null);
+    viewerPcRef.current?.close();
+    viewerPcRef.current = null;
+    setLinkState('reconnecting');
+    void send('viewer-join', { from: selfId });
+  }, [send, selfId]);
+
 
 
   // Clean up on page hide
