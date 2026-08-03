@@ -49,22 +49,26 @@ const ProfilePage = () => {
       .maybeSingle();
 
     if (!error && data) {
-      setProfile(data);
+      setProfile(data as any);
       setNewName(data.name);
+      setNewUsername(((data as any).username as string) || '');
     } else if (!data) {
+      const base = (user.email?.split('@')[0] || 'buna').toLowerCase().replace(/[^a-z0-9_]/g, '') || 'buna';
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
         .insert({
           user_id: user.id,
           name: user.email?.split('@')[0] || 'User',
           email: user.email,
-        })
+          username: `${base}${Math.floor(Math.random() * 9000 + 1000)}`,
+        } as any)
         .select()
         .single();
-      
+
       if (!createError && newProfile) {
-        setProfile(newProfile);
+        setProfile(newProfile as any);
         setNewName(newProfile.name);
+        setNewUsername(((newProfile as any).username as string) || '');
       }
     }
   };
@@ -85,6 +89,28 @@ const ProfilePage = () => {
       fetchProfile();
     }
   };
+
+  const handleUpdateUsername = async () => {
+    if (!user) return;
+    const clean = newUsername.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    if (clean.length < 3) {
+      toast.error('Username must be at least 3 characters (letters, numbers, _)');
+      return;
+    }
+    const { error } = await supabase
+      .from('profiles')
+      .update({ username: clean } as any)
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast.error(error.message.includes('duplicate') ? 'That username is taken' : 'Failed to update username');
+    } else {
+      toast.success('Username updated!');
+      setEditingUsername(false);
+      fetchProfile();
+    }
+  };
+
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
