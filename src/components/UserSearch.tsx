@@ -6,8 +6,10 @@ import { Search, User, X } from 'lucide-react';
 interface Profile {
   user_id: string;
   name: string;
+  username: string | null;
   avatar_url: string | null;
 }
+
 
 interface UserSearchProps {
   onClose?: () => void;
