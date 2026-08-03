@@ -263,9 +263,11 @@ const BunaEntetaPage = () => {
                       <p className="font-medium truncate">{f.profile.name}</p>
                       {f.profile.is_verified && <VerifiedBadge size={14} />}
                     </div>
+                    {f.profile.username && <p className="text-xs text-primary truncate">@{f.profile.username}</p>}
                     <p className="text-xs text-muted-foreground">Buna Enteta friend</p>
                   </div>
                 </button>
+
                 <button
                   onClick={() => navigate(`/dm/${f.profile.user_id}`)}
                   className="px-3 py-2 rounded-xl bg-muted text-sm font-medium hover:bg-muted/70"
