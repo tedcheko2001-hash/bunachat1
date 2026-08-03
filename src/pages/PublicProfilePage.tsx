@@ -12,10 +12,12 @@ import { toast } from 'sonner';
 interface PublicProfile {
   user_id: string;
   name: string;
+  username: string | null;
   avatar_url: string | null;
   bio: string | null;
   is_verified: boolean;
 }
+
 
 const PublicProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
