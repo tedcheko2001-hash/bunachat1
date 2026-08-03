@@ -107,6 +107,12 @@ const CommentItem = ({
                 {profile?.name || 'User'}
               </button>
               {profile?.is_verified && <VerifiedBadge size={14} />}
+              {profile?.username && (
+                <button onClick={goToProfile} className="text-xs text-primary hover:underline">
+                  @{profile.username}
+                </button>
+              )}
+
               {roundLabel && (
                 <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded-full font-medium">
                   {roundLabel}
