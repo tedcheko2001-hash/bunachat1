@@ -447,7 +447,7 @@ const LiveCeremonyView = ({
             <p className="text-sm text-white/70">Requesting camera & mic…</p>
           </div>
         ) : (
-          // Viewer: keep the video element mounted, overlay a waiting state
+          // Viewer: keep the video element mounted, overlay a clear connection status
           <div className="w-full h-full relative bg-gradient-to-b from-[#2a140a] via-black to-black">
             <video
               ref={videoRef}
@@ -456,15 +456,34 @@ const LiveCeremonyView = ({
               muted
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 animate-pulse">
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+              <div
+                className={`w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 ${
+                  linkState === 'failed' ? '' : 'animate-pulse'
+                }`}
+              >
                 <Coffee size={44} className="text-amber-400" />
               </div>
               <p className="text-lg font-semibold">{hostName || 'Host'} is live</p>
-              <p className="text-sm text-white/60 mt-1">Waiting for host video… ☕</p>
+              <p className="text-sm text-white/60 mt-1">
+                {linkState === 'failed'
+                  ? "Couldn't connect to the host's video"
+                  : linkState === 'reconnecting'
+                    ? `Connection lost — reconnecting…${retryCount ? ` (attempt ${retryCount})` : ''}`
+                    : `Connecting to host video…${retryCount ? ` (attempt ${retryCount})` : ''} ☕`}
+              </p>
+              {(linkState === 'failed' || retryCount >= 2) && (
+                <button
+                  onClick={retryNow}
+                  className="mt-4 px-4 py-2 rounded-full bg-amber-500 text-black text-sm font-semibold"
+                >
+                  Try again
+                </button>
+              )}
             </div>
           </div>
         )}
+
 
         {/* subtle vignette */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70" />
