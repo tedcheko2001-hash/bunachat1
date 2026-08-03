@@ -10,9 +10,11 @@ import { ArrowLeft, UserPlus, Check, X, UserMinus, Users, Sparkles } from 'lucid
 interface ProfileLite {
   user_id: string;
   name: string;
+  username?: string | null;
   avatar_url: string | null;
   is_verified?: boolean;
 }
+
 interface Friendship {
   id: string;
   requester_id: string;
