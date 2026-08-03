@@ -174,7 +174,7 @@ const BunaEntetaPage = () => {
               </p>
             )}
             {suggestions.map((p) => (
-              <div key={p.user_id} className="buna-card p-3 flex items-center gap-3">
+              <div key={p.user_id} className="buna-card p-3 flex items-center gap-2">
                 <button onClick={() => navigate(`/u/${p.user_id}`)} className="flex items-center gap-3 flex-1 min-w-0">
                   <Avatar p={p} />
                   <div className="flex-1 min-w-0 text-left">
@@ -182,8 +182,14 @@ const BunaEntetaPage = () => {
                       <p className="font-medium truncate">{p.name}</p>
                       {p.is_verified && <VerifiedBadge size={14} />}
                     </div>
-                    <p className="text-xs text-muted-foreground">New on Buna Chat</p>
+                    {p.username && <p className="text-xs text-primary truncate">@{p.username}</p>}
                   </div>
+                </button>
+                <button
+                  onClick={() => navigate(`/dm/${p.user_id}`)}
+                  className="px-3 py-2 rounded-xl bg-muted text-sm font-medium hover:bg-muted/70"
+                >
+                  Message
                 </button>
                 <button
                   onClick={() => sendRequest(p.user_id, p.name)}
@@ -192,6 +198,7 @@ const BunaEntetaPage = () => {
                   <UserPlus size={14} /> Connect
                 </button>
               </div>
+
             ))}
           </>
         )}
