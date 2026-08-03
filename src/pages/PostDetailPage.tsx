@@ -86,8 +86,9 @@ const PostDetailPage = () => {
     if (userIds.length) {
       const { data: profs } = await (supabase as any)
         .from('profiles_public')
-        .select('user_id, name, avatar_url, is_verified')
+        .select('user_id, name, username, avatar_url, is_verified')
         .in('user_id', userIds);
+
       const map: Record<string, CommentProfile> = {};
       (profs || []).forEach((p: any) => { map[p.user_id] = p; });
       setCommentProfiles(map);
