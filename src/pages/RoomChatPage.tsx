@@ -136,7 +136,7 @@ const RoomChatPage = () => {
     setUploadingPic(true);
     try {
       const ext = file.name.split('.').pop() || 'jpg';
-      const path = `rooms/${roomId}-${Date.now()}.${ext}`;
+      const path = `${user.id}/room-${roomId}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
       if (upErr) throw upErr;
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
