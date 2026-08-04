@@ -322,8 +322,16 @@ const DirectMessagePage = () => {
             );
           })
         )}
+        {otherTyping && (
+          <div className="flex justify-start">
+            <div className="px-4 py-2 rounded-2xl rounded-bl-sm bg-muted text-muted-foreground text-xs">
+              {otherProfile?.name || 'User'} is typing…
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
+
 
       {/* Input */}
       <div className="p-4 bg-card border-t border-border shrink-0" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
