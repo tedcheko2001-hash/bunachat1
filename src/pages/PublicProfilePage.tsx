@@ -59,7 +59,17 @@ const PublicProfilePage = () => {
         .eq('following_id', userId)
         .maybeSingle();
       setIsFollowing(!!followRow);
+
+      const { data: fr } = await (supabase as any)
+        .from('friendships')
+        .select('id, status, requester_id')
+        .or(
+          `and(requester_id.eq.${user.id},addressee_id.eq.${userId}),and(requester_id.eq.${userId},addressee_id.eq.${user.id})`
+        )
+        .maybeSingle();
+      setFriendship(fr ?? null);
     }
+
 
     const { count: followers } = await supabase
       .from('follows')
