@@ -254,17 +254,13 @@ const BunaEntetaPage = () => {
             )}
             {friends.map((f) => (
               <div key={f.id} className="buna-card p-3 flex items-center gap-3">
-                <button onClick={() => navigate(`/u/${f.profile.user_id}`)} className="flex items-center gap-3 flex-1 min-w-0">
-                  <Avatar p={f.profile} />
-                  <div className="text-left flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <p className="font-medium truncate">{f.profile.name}</p>
-                      {f.profile.is_verified && <VerifiedBadge size={14} />}
-                    </div>
-                    {f.profile.username && <p className="text-xs text-primary truncate">@{f.profile.username}</p>}
-                    <p className="text-xs text-muted-foreground">Buna Enteta friend</p>
-                  </div>
-                </button>
+                <UserIdentity
+                  profile={f.profile}
+                  size={48}
+                  className="flex-1"
+                  subtitle="Buna Enteta friend"
+                />
+
 
                 <button
                   onClick={() => navigate(`/dm/${f.profile.user_id}`)}
