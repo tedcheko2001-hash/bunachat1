@@ -339,7 +339,8 @@ const DirectMessagePage = () => {
           <input
             type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => { setNewMessage(e.target.value); sendTyping(e.target.value.length > 0); }}
+            onBlur={() => sendTyping(false)}
             onKeyDown={handleKeyPress}
             placeholder="Type a message..."
             className="input-buna flex-1"
