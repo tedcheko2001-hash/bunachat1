@@ -103,6 +103,50 @@ const PublicProfilePage = () => {
     }
   };
 
+  const friendLabel = !friendship
+    ? 'Buna Enteta'
+    : friendship.status === 'accepted'
+      ? 'Buna Enteta friend'
+      : friendship.requester_id === user?.id
+        ? 'Request sent'
+        : 'Accept request';
+
+  const handleFriendAction = async () => {
+    if (!user || !userId) return;
+    setFriendBusy(true);
+    try {
+      if (!friendship) {
+        const { data, error } = await (supabase as any)
+          .from('friendships')
+          .insert({ requester_id: user.id, addressee_id: userId, status: 'pending' })
+          .select('id, status, requester_id')
+          .single();
+        if (error) throw error;
+        setFriendship(data);
+        toast.success('Buna Enteta request sent');
+      } else if (friendship.status === 'pending' && friendship.requester_id !== user.id) {
+        const { error } = await (supabase as any)
+          .from('friendships')
+          .update({ status: 'accepted' })
+          .eq('id', friendship.id);
+        if (error) throw error;
+        setFriendship({ ...friendship, status: 'accepted' });
+        toast.success('Buna Enteta! You are now connected');
+      } else {
+        const { error } = await (supabase as any).from('friendships').delete().eq('id', friendship.id);
+        if (error) throw error;
+        setFriendship(null);
+        toast.success('Removed');
+      }
+    } catch {
+      toast.error('Could not update Buna Enteta');
+    } finally {
+      setFriendBusy(false);
+    }
+  };
+
+
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
