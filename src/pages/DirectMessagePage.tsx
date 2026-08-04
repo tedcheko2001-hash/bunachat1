@@ -293,11 +293,17 @@ const DirectMessagePage = () => {
                     }`}
                   >
                     <p className="text-sm">{message.content}</p>
-                    <p className={`text-xs mt-1 ${
+                    <p className={`text-xs mt-1 flex items-center gap-1 ${
                       isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'
                     }`}>
                       {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {isMe && (
+                        <span className="inline-flex items-center">
+                          {message.read_at ? <CheckCheck size={13} /> : <Check size={13} />}
+                        </span>
+                      )}
                     </p>
+
                   </div>
                   {isMe && (
                     <button
