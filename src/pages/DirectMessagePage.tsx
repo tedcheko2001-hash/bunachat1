@@ -205,6 +205,7 @@ const DirectMessagePage = () => {
       });
 
       setNewMessage('');
+      sendTyping(false);
     } catch (err) {
       console.error('Failed to send message:', err);
     } finally {
