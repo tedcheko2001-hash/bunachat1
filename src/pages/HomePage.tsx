@@ -59,24 +59,46 @@ const HomePage = () => {
       .channel('posts-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => { void fetchPosts(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, () => { void fetchPosts(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, (payload) => {
+        const postId = (payload.new as any)?.post_id ?? (payload.old as any)?.post_id;
+        if (postId) void refreshCommentCount(postId);
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, []);
+
+  // Each post's comment count is computed independently: COUNT(*) WHERE post_id = X
+  const refreshCommentCount = async (postId: string) => {
+    const { count } = await supabase
+      .from('comments')
+      .select('id', { count: 'exact', head: true })
+      .eq('post_id', postId);
+    setCommentCounts((prev) => ({ ...prev, [postId]: count ?? 0 }));
+  };
+
+  const fetchCommentCounts = async (postIds: string[]) => {
+    if (postIds.length === 0) return;
+    const { data } = await (supabase as any).rpc('post_comment_counts', { _post_ids: postIds });
+    const map: Record<string, number> = {};
+    postIds.forEach((id) => { map[id] = 0; });
+    (data || []).forEach((r: any) => { map[r.post_id] = r.comment_count; });
+    setCommentCounts(map);
+  };
 
   const fetchPosts = async () => {
     const { data, error } = await supabase
       .from('posts')
       .select(`
         id, content, image_url, image_urls, visibility, created_at, user_id,
-        likes (id, user_id, reaction_type),
-        comments (id)
+        likes (id, user_id, reaction_type)
       `)
       .order('created_at', { ascending: false })
       .limit(20);
 
     if (!error && data) {
       setPosts(data as unknown as Post[]);
+      void fetchCommentCounts(data.map((p: any) => p.id));
 
       const userIds = [...new Set(data.map((p: any) => p.user_id))];
       if (userIds.length > 0) {
@@ -93,6 +115,7 @@ const HomePage = () => {
 
     }
   };
+
 
   const openUser = (userId: string) => {
     if (user && userId === user.id) navigate('/profile');
