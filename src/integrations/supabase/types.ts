@@ -350,6 +350,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          read_at: string | null
           receiver_id: string | null
           room_id: string | null
           sender_id: string
@@ -358,6 +359,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          read_at?: string | null
           receiver_id?: string | null
           room_id?: string | null
           sender_id: string
@@ -366,6 +368,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          read_at?: string | null
           receiver_id?: string | null
           room_id?: string | null
           sender_id?: string
@@ -912,11 +915,29 @@ export type Database = {
           user_id: string
         }[]
       }
+      post_comment_count: { Args: { _post_id: string }; Returns: number }
+      post_comment_counts: {
+        Args: { _post_ids: string[] }
+        Returns: {
+          comment_count: number
+          post_id: string
+        }[]
+      }
       room_member_counts: {
         Args: never
         Returns: {
           member_count: number
           room_id: string
+        }[]
+      }
+      search_profiles: {
+        Args: { _limit?: number; _q: string }
+        Returns: {
+          avatar_url: string
+          is_verified: boolean
+          name: string
+          user_id: string
+          username: string
         }[]
       }
     }
