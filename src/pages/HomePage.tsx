@@ -39,6 +39,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { user, language } = useApp();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const [profiles, setProfiles] = useState<Record<string, { name: string; username: string | null; avatar_url: string | null; is_verified?: boolean }>>({});
   const [showPostModal, setShowPostModal] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
