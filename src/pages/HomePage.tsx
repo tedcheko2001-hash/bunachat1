@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
 import HeroSection from '@/components/HeroSection';
 import UserSearch from '@/components/UserSearch';
+import UserIdentity from '@/components/UserIdentity';
 import StoriesBar from '@/components/StoriesBar';
 import StoryCreator from '@/components/StoryCreator';
 import StoryViewer from '@/components/StoryViewer';
@@ -404,7 +405,7 @@ const HomePage = () => {
                     className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
                   >
                     <MessageSquare size={18} />
-                    <span className="text-sm">{post.comments.length}</span>
+                    <span className="text-sm">{commentCounts[post.id] ?? 0}</span>
                   </button>
                 </div>
               </div>
