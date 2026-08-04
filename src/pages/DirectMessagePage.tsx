@@ -164,7 +164,7 @@ const DirectMessagePage = () => {
     if (!user || !userId) return;
     const { data } = await supabase
       .from('messages')
-      .select('id, content, sender_id, created_at')
+      .select('id, content, sender_id, created_at, read_at')
       .is('room_id', null)
       .or(`and(sender_id.eq.${user.id},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${user.id})`)
       .order('created_at', { ascending: true })
