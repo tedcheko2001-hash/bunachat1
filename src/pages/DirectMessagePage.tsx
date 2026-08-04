@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Send, User, Trash2, Phone, Video as VideoIcon } from 'lucide-react';
+import { ArrowLeft, Send, User, Trash2, Phone, Video as VideoIcon, Check, CheckCheck } from 'lucide-react';
 import { useCall } from '@/contexts/CallContext';
 import { toast } from 'sonner';
 
@@ -11,11 +11,15 @@ interface Message {
   content: string;
   sender_id: string;
   created_at: string;
+  read_at?: string | null;
 }
 
 interface Profile {
+  user_id?: string;
   name: string;
+  username?: string | null;
   avatar_url: string | null;
+  is_verified?: boolean | null;
 }
 
 const DirectMessagePage = () => {
@@ -28,13 +32,30 @@ const DirectMessagePage = () => {
   const [otherProfile, setOtherProfile] = useState<Profile | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [otherTyping, setOtherTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const presenceRef = useRef<any>(null);
+  const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSent = useRef(0);
+
+  const threadKey = user && userId ? [user.id, userId].sort().join('__') : null;
+
+  const markIncomingRead = async () => {
+    if (!user || !userId) return;
+    await (supabase as any)
+      .from('messages')
+      .update({ read_at: new Date().toISOString() })
+      .eq('sender_id', userId)
+      .eq('receiver_id', user.id)
+      .is('read_at', null);
+  };
 
   useEffect(() => {
     if (user && userId) {
       fetchProfile();
       fetchMessages();
       ensureConversation();
+      void markIncomingRead();
       // Auto-delete DM notifications from this sender when the chat is opened
       supabase.from('notifications')
         .delete()
@@ -59,13 +80,53 @@ const DirectMessagePage = () => {
               if (prev.some(m => m.id === msg.id)) return prev;
               return [...prev, msg];
             });
+            if (msg.sender_id === userId) void markIncomingRead();
           }
+        })
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+        }, (payload) => {
+          const msg = payload.new as Message;
+          setMessages(prev => prev.map(m => (m.id === msg.id ? { ...m, read_at: msg.read_at } : m)));
         })
         .subscribe();
 
-      return () => { supabase.removeChannel(channel); };
+      // Typing indicator channel (ephemeral broadcast)
+      const typing = supabase
+        .channel(`typing-${threadKey}`, { config: { broadcast: { self: false } } })
+        .on('broadcast', { event: 'typing' }, (payload: any) => {
+          if (payload?.payload?.userId !== userId) return;
+          setOtherTyping(!!payload.payload.typing);
+          if (typingTimeout.current) clearTimeout(typingTimeout.current);
+          if (payload.payload.typing) {
+            typingTimeout.current = setTimeout(() => setOtherTyping(false), 3000);
+          }
+        })
+        .subscribe();
+      presenceRef.current = typing;
+
+      return () => {
+        supabase.removeChannel(channel);
+        supabase.removeChannel(typing);
+        if (typingTimeout.current) clearTimeout(typingTimeout.current);
+      };
     }
   }, [user, userId]);
+
+  const sendTyping = (typing: boolean) => {
+    if (!presenceRef.current || !user) return;
+    const now = Date.now();
+    if (typing && now - lastTypingSent.current < 1200) return;
+    lastTypingSent.current = now;
+    presenceRef.current.send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: { userId: user.id, typing },
+    });
+  };
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -75,11 +136,12 @@ const DirectMessagePage = () => {
     if (!userId) return;
     const { data } = await (supabase as any)
       .from('profiles_public')
-      .select('name, avatar_url')
+      .select('user_id, name, username, avatar_url, is_verified')
       .eq('user_id', userId)
       .single();
     if (data) setOtherProfile(data);
   };
+
 
   const ensureConversation = async () => {
     if (!user || !userId) return;
@@ -102,7 +164,7 @@ const DirectMessagePage = () => {
     if (!user || !userId) return;
     const { data } = await supabase
       .from('messages')
-      .select('id, content, sender_id, created_at')
+      .select('id, content, sender_id, created_at, read_at')
       .is('room_id', null)
       .or(`and(sender_id.eq.${user.id},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${user.id})`)
       .order('created_at', { ascending: true })
@@ -143,6 +205,7 @@ const DirectMessagePage = () => {
       });
 
       setNewMessage('');
+      sendTyping(false);
     } catch (err) {
       console.error('Failed to send message:', err);
     } finally {
@@ -164,16 +227,27 @@ const DirectMessagePage = () => {
         <button onClick={() => navigate('/conversations')} className="p-2 -ml-2">
           <ArrowLeft size={24} />
         </button>
-        <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center overflow-hidden">
+        <button
+          onClick={() => otherUserId && navigate(`/u/${otherUserId}`)}
+          className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center overflow-hidden shrink-0"
+          aria-label="Open profile"
+        >
           {otherProfile?.avatar_url ? (
             <img src={otherProfile.avatar_url} alt="" className="w-full h-full object-cover" />
           ) : (
             <User size={20} />
           )}
-        </div>
-        <div className="flex-1 min-w-0">
+        </button>
+        <button
+          onClick={() => otherUserId && navigate(`/u/${otherUserId}`)}
+          className="flex-1 min-w-0 text-left"
+        >
           <h1 className="font-semibold text-base truncate">{otherProfile?.name || 'Chat'}</h1>
-        </div>
+          <p className="text-xs opacity-80 truncate">
+            {otherTyping ? 'typing…' : otherProfile?.username ? `@${otherProfile.username}` : ''}
+          </p>
+        </button>
+
         {otherUserId && (
           <div className="flex items-center gap-1">
             <button
@@ -219,11 +293,17 @@ const DirectMessagePage = () => {
                     }`}
                   >
                     <p className="text-sm">{message.content}</p>
-                    <p className={`text-xs mt-1 ${
+                    <p className={`text-xs mt-1 flex items-center gap-1 ${
                       isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'
                     }`}>
                       {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {isMe && (
+                        <span className="inline-flex items-center">
+                          {message.read_at ? <CheckCheck size={13} /> : <Check size={13} />}
+                        </span>
+                      )}
                     </p>
+
                   </div>
                   {isMe && (
                     <button
@@ -242,8 +322,16 @@ const DirectMessagePage = () => {
             );
           })
         )}
+        {otherTyping && (
+          <div className="flex justify-start">
+            <div className="px-4 py-2 rounded-2xl rounded-bl-sm bg-muted text-muted-foreground text-xs">
+              {otherProfile?.name || 'User'} is typing…
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
+
 
       {/* Input */}
       <div className="p-4 bg-card border-t border-border shrink-0" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
@@ -251,7 +339,8 @@ const DirectMessagePage = () => {
           <input
             type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => { setNewMessage(e.target.value); sendTyping(e.target.value.length > 0); }}
+            onBlur={() => sendTyping(false)}
             onKeyDown={handleKeyPress}
             placeholder="Type a message..."
             className="input-buna flex-1"

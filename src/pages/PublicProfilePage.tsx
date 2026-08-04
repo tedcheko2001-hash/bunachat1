@@ -5,7 +5,7 @@ import { useApp } from '@/contexts/AppContext';
 import BottomNav from '@/components/BottomNav';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, MessageCircle, UserPlus, UserMinus, Phone, Video as VideoIcon } from 'lucide-react';
+import { ArrowLeft, MessageCircle, UserPlus, UserMinus, Phone, Video as VideoIcon, Coffee } from 'lucide-react';
 import { useCall } from '@/contexts/CallContext';
 import { toast } from 'sonner';
 
@@ -30,6 +30,8 @@ const PublicProfilePage = () => {
   const [followBusy, setFollowBusy] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [friendship, setFriendship] = useState<{ id: string; status: string; requester_id: string } | null>(null);
+  const [friendBusy, setFriendBusy] = useState(false);
 
   useEffect(() => {
     if (userId && user && userId === user.id) {
@@ -57,7 +59,17 @@ const PublicProfilePage = () => {
         .eq('following_id', userId)
         .maybeSingle();
       setIsFollowing(!!followRow);
+
+      const { data: fr } = await (supabase as any)
+        .from('friendships')
+        .select('id, status, requester_id')
+        .or(
+          `and(requester_id.eq.${user.id},addressee_id.eq.${userId}),and(requester_id.eq.${userId},addressee_id.eq.${user.id})`
+        )
+        .maybeSingle();
+      setFriendship(fr ?? null);
     }
+
 
     const { count: followers } = await supabase
       .from('follows')
@@ -90,6 +102,50 @@ const PublicProfilePage = () => {
       setFollowBusy(false);
     }
   };
+
+  const friendLabel = !friendship
+    ? 'Buna Enteta'
+    : friendship.status === 'accepted'
+      ? 'Buna Enteta friend'
+      : friendship.requester_id === user?.id
+        ? 'Request sent'
+        : 'Accept request';
+
+  const handleFriendAction = async () => {
+    if (!user || !userId) return;
+    setFriendBusy(true);
+    try {
+      if (!friendship) {
+        const { data, error } = await (supabase as any)
+          .from('friendships')
+          .insert({ requester_id: user.id, addressee_id: userId, status: 'pending' })
+          .select('id, status, requester_id')
+          .single();
+        if (error) throw error;
+        setFriendship(data);
+        toast.success('Buna Enteta request sent');
+      } else if (friendship.status === 'pending' && friendship.requester_id !== user.id) {
+        const { error } = await (supabase as any)
+          .from('friendships')
+          .update({ status: 'accepted' })
+          .eq('id', friendship.id);
+        if (error) throw error;
+        setFriendship({ ...friendship, status: 'accepted' });
+        toast.success('Buna Enteta! You are now connected');
+      } else {
+        const { error } = await (supabase as any).from('friendships').delete().eq('id', friendship.id);
+        if (error) throw error;
+        setFriendship(null);
+        toast.success('Removed');
+      }
+    } catch {
+      toast.error('Could not update Buna Enteta');
+    } finally {
+      setFriendBusy(false);
+    }
+  };
+
+
 
   if (loading) {
     return (
@@ -147,6 +203,15 @@ const PublicProfilePage = () => {
           <Button onClick={() => navigate(`/dm/${profile.user_id}`)} className="gap-2">
             <MessageCircle size={18} /> Message
           </Button>
+          <Button
+            onClick={handleFriendAction}
+            disabled={friendBusy}
+            variant={friendship ? 'outline' : 'default'}
+            className="gap-2"
+          >
+            <Coffee size={18} /> <span className="truncate">{friendLabel}</span>
+          </Button>
+
           <Button
             onClick={toggleFollow}
             variant={isFollowing ? 'outline' : 'default'}

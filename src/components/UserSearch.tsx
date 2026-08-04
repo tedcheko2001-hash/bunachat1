@@ -30,11 +30,11 @@ const UserSearch = ({ onClose, onSelectUser }: UserSearchProps) => {
       }
 
       setLoading(true);
-      const { data, error } = await (supabase as any)
-        .from('profiles_public')
-        .select('user_id, name, username, avatar_url')
-        .or(`name.ilike.%${query}%,username.ilike.%${query}%`)
-        .limit(10);
+      // Indexed prefix search over profiles (lower(name) / lower(username))
+      const { data, error } = await (supabase as any).rpc('search_profiles', {
+        _q: query.trim(),
+        _limit: 15,
+      });
 
       if (!error && data) {
         setResults(data as Profile[]);

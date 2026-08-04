@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import BottomNav from '@/components/BottomNav';
-import VerifiedBadge from '@/components/VerifiedBadge';
+import UserIdentity from '@/components/UserIdentity';
 import { toast } from 'sonner';
 import { ArrowLeft, UserPlus, Check, X, UserMinus, Users, Sparkles } from 'lucide-react';
 
@@ -82,6 +82,8 @@ const BunaEntetaPage = () => {
 
   const sendRequest = async (addresseeId: string, name: string) => {
     if (!user) return;
+    // instant UI update
+    setSuggestions((prev) => prev.filter((p) => p.user_id !== addresseeId));
     const { error } = await (supabase as any).from('friendships').insert({
       requester_id: user.id,
       addressee_id: addresseeId,
@@ -89,44 +91,40 @@ const BunaEntetaPage = () => {
     });
     if (error) {
       toast.error('Could not send request');
+      loadAll();
       return;
     }
     toast.success(`Buna Enteta request sent to ${name}`);
-    setSuggestions((prev) => prev.filter((p) => p.user_id !== addresseeId));
-    loadAll();
   };
 
   const respond = async (id: string, accept: boolean) => {
+    const target = requests.find((r) => r.id === id);
+    // instant UI update
+    setRequests((prev) => prev.filter((r) => r.id !== id));
+    if (accept && target) setFriends((prev) => [{ ...target, status: 'accepted' }, ...prev]);
+
     if (accept) {
       const { error } = await (supabase as any)
         .from('friendships')
         .update({ status: 'accepted' })
         .eq('id', id);
-      if (error) return toast.error('Failed');
+      if (error) { toast.error('Failed'); loadAll(); return; }
       toast.success('Buna Enteta! You are now connected');
     } else {
       const { error } = await (supabase as any).from('friendships').delete().eq('id', id);
-      if (error) return toast.error('Failed');
+      if (error) { toast.error('Failed'); loadAll(); return; }
+      toast.success('Request declined');
     }
-    loadAll();
   };
 
   const removeFriend = async (id: string) => {
+    setFriends((prev) => prev.filter((f) => f.id !== id));
     const { error } = await (supabase as any).from('friendships').delete().eq('id', id);
-    if (error) return toast.error('Failed');
+    if (error) { toast.error('Failed'); loadAll(); return; }
     toast.success('Removed');
-    loadAll();
   };
 
-  const Avatar = ({ p }: { p: ProfileLite }) => (
-    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden shrink-0">
-      {p.avatar_url ? (
-        <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
-      ) : (
-        <span className="text-lg text-primary font-bold">{p.name?.charAt(0) || 'U'}</span>
-      )}
-    </div>
-  );
+
 
   return (
     <div className="page-container bg-background">
@@ -175,16 +173,8 @@ const BunaEntetaPage = () => {
             )}
             {suggestions.map((p) => (
               <div key={p.user_id} className="buna-card p-3 flex items-center gap-2">
-                <button onClick={() => navigate(`/u/${p.user_id}`)} className="flex items-center gap-3 flex-1 min-w-0">
-                  <Avatar p={p} />
-                  <div className="flex-1 min-w-0 text-left">
-                    <div className="flex items-center gap-1">
-                      <p className="font-medium truncate">{p.name}</p>
-                      {p.is_verified && <VerifiedBadge size={14} />}
-                    </div>
-                    {p.username && <p className="text-xs text-primary truncate">@{p.username}</p>}
-                  </div>
-                </button>
+                <UserIdentity profile={p} size={48} className="flex-1" />
+
                 <button
                   onClick={() => navigate(`/dm/${p.user_id}`)}
                   className="px-3 py-2 rounded-xl bg-muted text-sm font-medium hover:bg-muted/70"
@@ -210,17 +200,13 @@ const BunaEntetaPage = () => {
             )}
             {requests.map((r) => (
               <div key={r.id} className="buna-card p-3 flex items-center gap-2">
-                <button onClick={() => navigate(`/u/${r.profile.user_id}`)} className="flex items-center gap-3 flex-1 min-w-0">
-                  <Avatar p={r.profile} />
-                  <div className="text-left flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <p className="font-medium truncate">{r.profile.name}</p>
-                      {r.profile.is_verified && <VerifiedBadge size={14} />}
-                    </div>
-                    {r.profile.username && <p className="text-xs text-primary truncate">@{r.profile.username}</p>}
-                    <p className="text-xs text-muted-foreground">wants to connect</p>
-                  </div>
-                </button>
+                <UserIdentity
+                  profile={r.profile}
+                  size={48}
+                  className="flex-1"
+                  subtitle="wants to connect"
+                />
+
                 <button
                   onClick={() => navigate(`/dm/${r.profile.user_id}`)}
                   className="px-3 py-2 rounded-xl bg-muted text-sm font-medium hover:bg-muted/70"
@@ -256,17 +242,13 @@ const BunaEntetaPage = () => {
             )}
             {friends.map((f) => (
               <div key={f.id} className="buna-card p-3 flex items-center gap-3">
-                <button onClick={() => navigate(`/u/${f.profile.user_id}`)} className="flex items-center gap-3 flex-1 min-w-0">
-                  <Avatar p={f.profile} />
-                  <div className="text-left flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <p className="font-medium truncate">{f.profile.name}</p>
-                      {f.profile.is_verified && <VerifiedBadge size={14} />}
-                    </div>
-                    {f.profile.username && <p className="text-xs text-primary truncate">@{f.profile.username}</p>}
-                    <p className="text-xs text-muted-foreground">Buna Enteta friend</p>
-                  </div>
-                </button>
+                <UserIdentity
+                  profile={f.profile}
+                  size={48}
+                  className="flex-1"
+                  subtitle="Buna Enteta friend"
+                />
+
 
                 <button
                   onClick={() => navigate(`/dm/${f.profile.user_id}`)}

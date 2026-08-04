@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
 import HeroSection from '@/components/HeroSection';
 import UserSearch from '@/components/UserSearch';
+import UserIdentity from '@/components/UserIdentity';
 import StoriesBar from '@/components/StoriesBar';
 import StoryCreator from '@/components/StoryCreator';
 import StoryViewer from '@/components/StoryViewer';
@@ -33,13 +34,13 @@ interface Post {
   created_at: string;
   user_id: string;
   likes: LikeRow[];
-  comments: { id: string }[];
 }
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { user, language } = useApp();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const [profiles, setProfiles] = useState<Record<string, { name: string; username: string | null; avatar_url: string | null; is_verified?: boolean }>>({});
   const [showPostModal, setShowPostModal] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -59,24 +60,46 @@ const HomePage = () => {
       .channel('posts-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => { void fetchPosts(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, () => { void fetchPosts(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, (payload) => {
+        const postId = (payload.new as any)?.post_id ?? (payload.old as any)?.post_id;
+        if (postId) void refreshCommentCount(postId);
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, []);
+
+  // Each post's comment count is computed independently: COUNT(*) WHERE post_id = X
+  const refreshCommentCount = async (postId: string) => {
+    const { count } = await supabase
+      .from('comments')
+      .select('id', { count: 'exact', head: true })
+      .eq('post_id', postId);
+    setCommentCounts((prev) => ({ ...prev, [postId]: count ?? 0 }));
+  };
+
+  const fetchCommentCounts = async (postIds: string[]) => {
+    if (postIds.length === 0) return;
+    const { data } = await (supabase as any).rpc('post_comment_counts', { _post_ids: postIds });
+    const map: Record<string, number> = {};
+    postIds.forEach((id) => { map[id] = 0; });
+    (data || []).forEach((r: any) => { map[r.post_id] = r.comment_count; });
+    setCommentCounts(map);
+  };
 
   const fetchPosts = async () => {
     const { data, error } = await supabase
       .from('posts')
       .select(`
         id, content, image_url, image_urls, visibility, created_at, user_id,
-        likes (id, user_id, reaction_type),
-        comments (id)
+        likes (id, user_id, reaction_type)
       `)
       .order('created_at', { ascending: false })
       .limit(20);
 
     if (!error && data) {
       setPosts(data as unknown as Post[]);
+      void fetchCommentCounts(data.map((p: any) => p.id));
 
       const userIds = [...new Set(data.map((p: any) => p.user_id))];
       if (userIds.length > 0) {
@@ -93,6 +116,7 @@ const HomePage = () => {
 
     }
   };
+
 
   const openUser = (userId: string) => {
     if (user && userId === user.id) navigate('/profile');
@@ -296,41 +320,26 @@ const HomePage = () => {
             return (
               <div key={post.id} className="buna-card p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <button
-                    onClick={() => openUser(post.user_id)}
-                    className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden shrink-0"
-                    aria-label={`Open ${profile?.name || 'user'} profile`}
-                  >
-                    {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt={profile?.name || 'User avatar'} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-primary font-bold">{profile?.name?.charAt(0) || 'U'}</span>
-                    )}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <button
-                      onClick={() => openUser(post.user_id)}
-                      className="flex items-center gap-1.5 hover:underline max-w-full"
-                    >
-                      <p className="font-medium text-sm truncate">{profile?.name || 'User'}</p>
-                      {profile?.is_verified && <VerifiedBadge size={14} />}
-                    </button>
-                    {profile?.username && (
-                      <button
-                        onClick={() => openUser(post.user_id)}
-                        className="text-xs text-primary hover:underline block truncate"
-                      >
-                        @{profile.username}
-                      </button>
-                    )}
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      {new Date(post.created_at).toLocaleDateString()}
-                      <span className="inline-flex items-center gap-1">
-                        · {visibilityIcon(post.visibility)}
-                        <span className="capitalize">{post.visibility}</span>
+                  <UserIdentity
+                    profile={{
+                      user_id: post.user_id,
+                      name: profile?.name || 'User',
+                      username: profile?.username,
+                      avatar_url: profile?.avatar_url,
+                      is_verified: profile?.is_verified,
+                    }}
+                    className="flex-1"
+                    subtitle={
+                      <span className="flex items-center gap-1">
+                        {new Date(post.created_at).toLocaleDateString()}
+                        <span className="inline-flex items-center gap-1">
+                          · {visibilityIcon(post.visibility)}
+                          <span className="capitalize">{post.visibility}</span>
+                        </span>
                       </span>
-                    </p>
-                  </div>
+                    }
+                  />
+
                   {user?.id !== post.user_id && (
                     <button
                       onClick={() => navigate(`/dm/${post.user_id}`)}
@@ -396,7 +405,7 @@ const HomePage = () => {
                     className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
                   >
                     <MessageSquare size={18} />
-                    <span className="text-sm">{post.comments.length}</span>
+                    <span className="text-sm">{commentCounts[post.id] ?? 0}</span>
                   </button>
                 </div>
               </div>
