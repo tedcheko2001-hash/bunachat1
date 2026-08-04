@@ -82,6 +82,8 @@ const BunaEntetaPage = () => {
 
   const sendRequest = async (addresseeId: string, name: string) => {
     if (!user) return;
+    // instant UI update
+    setSuggestions((prev) => prev.filter((p) => p.user_id !== addresseeId));
     const { error } = await (supabase as any).from('friendships').insert({
       requester_id: user.id,
       addressee_id: addresseeId,
@@ -89,44 +91,40 @@ const BunaEntetaPage = () => {
     });
     if (error) {
       toast.error('Could not send request');
+      loadAll();
       return;
     }
     toast.success(`Buna Enteta request sent to ${name}`);
-    setSuggestions((prev) => prev.filter((p) => p.user_id !== addresseeId));
-    loadAll();
   };
 
   const respond = async (id: string, accept: boolean) => {
+    const target = requests.find((r) => r.id === id);
+    // instant UI update
+    setRequests((prev) => prev.filter((r) => r.id !== id));
+    if (accept && target) setFriends((prev) => [{ ...target, status: 'accepted' }, ...prev]);
+
     if (accept) {
       const { error } = await (supabase as any)
         .from('friendships')
         .update({ status: 'accepted' })
         .eq('id', id);
-      if (error) return toast.error('Failed');
+      if (error) { toast.error('Failed'); loadAll(); return; }
       toast.success('Buna Enteta! You are now connected');
     } else {
       const { error } = await (supabase as any).from('friendships').delete().eq('id', id);
-      if (error) return toast.error('Failed');
+      if (error) { toast.error('Failed'); loadAll(); return; }
+      toast.success('Request declined');
     }
-    loadAll();
   };
 
   const removeFriend = async (id: string) => {
+    setFriends((prev) => prev.filter((f) => f.id !== id));
     const { error } = await (supabase as any).from('friendships').delete().eq('id', id);
-    if (error) return toast.error('Failed');
+    if (error) { toast.error('Failed'); loadAll(); return; }
     toast.success('Removed');
-    loadAll();
   };
 
-  const Avatar = ({ p }: { p: ProfileLite }) => (
-    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden shrink-0">
-      {p.avatar_url ? (
-        <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
-      ) : (
-        <span className="text-lg text-primary font-bold">{p.name?.charAt(0) || 'U'}</span>
-      )}
-    </div>
-  );
+
 
   return (
     <div className="page-container bg-background">
