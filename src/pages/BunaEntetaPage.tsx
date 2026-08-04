@@ -173,16 +173,8 @@ const BunaEntetaPage = () => {
             )}
             {suggestions.map((p) => (
               <div key={p.user_id} className="buna-card p-3 flex items-center gap-2">
-                <button onClick={() => navigate(`/u/${p.user_id}`)} className="flex items-center gap-3 flex-1 min-w-0">
-                  <Avatar p={p} />
-                  <div className="flex-1 min-w-0 text-left">
-                    <div className="flex items-center gap-1">
-                      <p className="font-medium truncate">{p.name}</p>
-                      {p.is_verified && <VerifiedBadge size={14} />}
-                    </div>
-                    {p.username && <p className="text-xs text-primary truncate">@{p.username}</p>}
-                  </div>
-                </button>
+                <UserIdentity profile={p} size={48} className="flex-1" />
+
                 <button
                   onClick={() => navigate(`/dm/${p.user_id}`)}
                   className="px-3 py-2 rounded-xl bg-muted text-sm font-medium hover:bg-muted/70"
