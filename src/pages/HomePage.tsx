@@ -33,7 +33,6 @@ interface Post {
   created_at: string;
   user_id: string;
   likes: LikeRow[];
-  comments: { id: string }[];
 }
 
 const HomePage = () => {
