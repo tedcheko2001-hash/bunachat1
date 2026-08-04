@@ -227,16 +227,27 @@ const DirectMessagePage = () => {
         <button onClick={() => navigate('/conversations')} className="p-2 -ml-2">
           <ArrowLeft size={24} />
         </button>
-        <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center overflow-hidden">
+        <button
+          onClick={() => otherUserId && navigate(`/u/${otherUserId}`)}
+          className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center overflow-hidden shrink-0"
+          aria-label="Open profile"
+        >
           {otherProfile?.avatar_url ? (
             <img src={otherProfile.avatar_url} alt="" className="w-full h-full object-cover" />
           ) : (
             <User size={20} />
           )}
-        </div>
-        <div className="flex-1 min-w-0">
+        </button>
+        <button
+          onClick={() => otherUserId && navigate(`/u/${otherUserId}`)}
+          className="flex-1 min-w-0 text-left"
+        >
           <h1 className="font-semibold text-base truncate">{otherProfile?.name || 'Chat'}</h1>
-        </div>
+          <p className="text-xs opacity-80 truncate">
+            {otherTyping ? 'typing…' : otherProfile?.username ? `@${otherProfile.username}` : ''}
+          </p>
+        </button>
+
         {otherUserId && (
           <div className="flex items-center gap-1">
             <button
