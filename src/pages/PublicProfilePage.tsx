@@ -30,6 +30,8 @@ const PublicProfilePage = () => {
   const [followBusy, setFollowBusy] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [friendship, setFriendship] = useState<{ id: string; status: string; requester_id: string } | null>(null);
+  const [friendBusy, setFriendBusy] = useState(false);
 
   useEffect(() => {
     if (userId && user && userId === user.id) {
