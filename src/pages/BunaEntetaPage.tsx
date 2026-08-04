@@ -208,17 +208,13 @@ const BunaEntetaPage = () => {
             )}
             {requests.map((r) => (
               <div key={r.id} className="buna-card p-3 flex items-center gap-2">
-                <button onClick={() => navigate(`/u/${r.profile.user_id}`)} className="flex items-center gap-3 flex-1 min-w-0">
-                  <Avatar p={r.profile} />
-                  <div className="text-left flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <p className="font-medium truncate">{r.profile.name}</p>
-                      {r.profile.is_verified && <VerifiedBadge size={14} />}
-                    </div>
-                    {r.profile.username && <p className="text-xs text-primary truncate">@{r.profile.username}</p>}
-                    <p className="text-xs text-muted-foreground">wants to connect</p>
-                  </div>
-                </button>
+                <UserIdentity
+                  profile={r.profile}
+                  size={48}
+                  className="flex-1"
+                  subtitle="wants to connect"
+                />
+
                 <button
                   onClick={() => navigate(`/dm/${r.profile.user_id}`)}
                   className="px-3 py-2 rounded-xl bg-muted text-sm font-medium hover:bg-muted/70"
