@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import BottomNav from '@/components/BottomNav';
-import VerifiedBadge from '@/components/VerifiedBadge';
+import UserIdentity from '@/components/UserIdentity';
 import { toast } from 'sonner';
 import { ArrowLeft, UserPlus, Check, X, UserMinus, Users, Sparkles } from 'lucide-react';
 
