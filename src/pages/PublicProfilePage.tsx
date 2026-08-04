@@ -204,6 +204,15 @@ const PublicProfilePage = () => {
             <MessageCircle size={18} /> Message
           </Button>
           <Button
+            onClick={handleFriendAction}
+            disabled={friendBusy}
+            variant={friendship ? 'outline' : 'default'}
+            className="gap-2"
+          >
+            <Coffee size={18} /> <span className="truncate">{friendLabel}</span>
+          </Button>
+
+          <Button
             onClick={toggleFollow}
             variant={isFollowing ? 'outline' : 'default'}
             disabled={followBusy}
