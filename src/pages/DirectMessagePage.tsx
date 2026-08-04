@@ -15,8 +15,11 @@ interface Message {
 }
 
 interface Profile {
+  user_id?: string;
   name: string;
+  username?: string | null;
   avatar_url: string | null;
+  is_verified?: boolean | null;
 }
 
 const DirectMessagePage = () => {
@@ -29,13 +32,30 @@ const DirectMessagePage = () => {
   const [otherProfile, setOtherProfile] = useState<Profile | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [otherTyping, setOtherTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const presenceRef = useRef<any>(null);
+  const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSent = useRef(0);
+
+  const threadKey = user && userId ? [user.id, userId].sort().join('__') : null;
+
+  const markIncomingRead = async () => {
+    if (!user || !userId) return;
+    await (supabase as any)
+      .from('messages')
+      .update({ read_at: new Date().toISOString() })
+      .eq('sender_id', userId)
+      .eq('receiver_id', user.id)
+      .is('read_at', null);
+  };
 
   useEffect(() => {
     if (user && userId) {
       fetchProfile();
       fetchMessages();
       ensureConversation();
+      void markIncomingRead();
       // Auto-delete DM notifications from this sender when the chat is opened
       supabase.from('notifications')
         .delete()
@@ -60,13 +80,53 @@ const DirectMessagePage = () => {
               if (prev.some(m => m.id === msg.id)) return prev;
               return [...prev, msg];
             });
+            if (msg.sender_id === userId) void markIncomingRead();
           }
+        })
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+        }, (payload) => {
+          const msg = payload.new as Message;
+          setMessages(prev => prev.map(m => (m.id === msg.id ? { ...m, read_at: msg.read_at } : m)));
         })
         .subscribe();
 
-      return () => { supabase.removeChannel(channel); };
+      // Typing indicator channel (ephemeral broadcast)
+      const typing = supabase
+        .channel(`typing-${threadKey}`, { config: { broadcast: { self: false } } })
+        .on('broadcast', { event: 'typing' }, (payload: any) => {
+          if (payload?.payload?.userId !== userId) return;
+          setOtherTyping(!!payload.payload.typing);
+          if (typingTimeout.current) clearTimeout(typingTimeout.current);
+          if (payload.payload.typing) {
+            typingTimeout.current = setTimeout(() => setOtherTyping(false), 3000);
+          }
+        })
+        .subscribe();
+      presenceRef.current = typing;
+
+      return () => {
+        supabase.removeChannel(channel);
+        supabase.removeChannel(typing);
+        if (typingTimeout.current) clearTimeout(typingTimeout.current);
+      };
     }
   }, [user, userId]);
+
+  const sendTyping = (typing: boolean) => {
+    if (!presenceRef.current || !user) return;
+    const now = Date.now();
+    if (typing && now - lastTypingSent.current < 1200) return;
+    lastTypingSent.current = now;
+    presenceRef.current.send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: { userId: user.id, typing },
+    });
+  };
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
