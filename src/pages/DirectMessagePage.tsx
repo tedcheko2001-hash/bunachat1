@@ -11,6 +11,7 @@ interface Message {
   content: string;
   sender_id: string;
   created_at: string;
+  read_at?: string | null;
 }
 
 interface Profile {
