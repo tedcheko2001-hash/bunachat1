@@ -136,11 +136,12 @@ const DirectMessagePage = () => {
     if (!userId) return;
     const { data } = await (supabase as any)
       .from('profiles_public')
-      .select('name, avatar_url')
+      .select('user_id, name, username, avatar_url, is_verified')
       .eq('user_id', userId)
       .single();
     if (data) setOtherProfile(data);
   };
+
 
   const ensureConversation = async () => {
     if (!user || !userId) return;
