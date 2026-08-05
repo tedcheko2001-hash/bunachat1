@@ -14,7 +14,7 @@ interface Conversation {
 }
 
 interface ConversationWithProfile extends Conversation {
-  otherUser: { name: string; avatar_url: string | null; user_id: string };
+  otherUser: { name: string; username?: string | null; avatar_url: string | null; user_id: string; is_verified?: boolean | null };
   lastMessage?: { content: string; created_at: string };
   unreadCount: number;
 }
