@@ -79,7 +79,15 @@ const BunaEntetaPage = () => {
 
   useEffect(() => {
     loadAll();
-  }, [loadAll]);
+    if (!user) return;
+    const channel = supabase
+      .channel('friendships-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'friendships' }, () => {
+        loadAll();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [loadAll, user]);
 
   const sendRequest = async (addresseeId: string, name: string) => {
     if (!user) return;
