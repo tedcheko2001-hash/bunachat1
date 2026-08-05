@@ -4,7 +4,8 @@ import { useApp, t } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import BottomNav from '@/components/BottomNav';
 import UserSearch from '@/components/UserSearch';
-import { ArrowLeft, Search, User, MessageCircle } from 'lucide-react';
+import UserIdentity from '@/components/UserIdentity';
+import { ArrowLeft, Search, MessageCircle } from 'lucide-react';
 
 interface Conversation {
   id: string;
@@ -171,27 +172,21 @@ const ConversationsPage = () => {
           </div>
         ) : (
           conversations.map((convo) => (
-            <button
+            <div
               key={convo.id}
+              className="w-full buna-card p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
               onClick={() => navigate(`/dm/${convo.otherUser.user_id}`)}
-              className="w-full buna-card p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors"
             >
-              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
-                {convo.otherUser.avatar_url ? (
-                  <img src={convo.otherUser.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <User size={24} className="text-primary" />
-                )}
-              </div>
-              <div className="flex-1 text-left min-w-0">
-                <p className="font-semibold truncate">{convo.otherUser.name}</p>
-                {convo.otherUser.username && (
-                  <p className="text-xs text-primary truncate">@{convo.otherUser.username}</p>
-                )}
-                <p className={`text-sm truncate ${convo.unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-                  {convo.lastMessage?.content || 'No messages yet'}
-                </p>
-              </div>
+              <UserIdentity
+                profile={convo.otherUser}
+                size={48}
+                className="flex-1"
+                subtitle={
+                  <span className={convo.unreadCount > 0 ? 'text-foreground font-medium' : ''}>
+                    {convo.lastMessage?.content || 'No messages yet'}
+                  </span>
+                }
+              />
               <div className="flex flex-col items-end gap-1">
                 {convo.lastMessage && (
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -204,8 +199,9 @@ const ConversationsPage = () => {
                   </span>
                 )}
               </div>
-            </button>
+            </div>
           ))
+
         )}
       </div>
 
