@@ -70,17 +70,42 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Auth
+    const ensureProfile = async (u: any) => {
+      if (!u) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, username, name')
+        .eq('user_id', u.id)
+        .maybeSingle();
+      const emailBase = (u.email || 'buna').split('@')[0];
+      if (!data) {
+        await supabase.from('profiles').insert({
+          user_id: u.id,
+          name: u.user_metadata?.name || emailBase,
+          email: u.email,
+          username: `${emailBase.toLowerCase().replace(/[^a-z0-9_]/g, '')}${u.id.slice(0, 4)}`,
+        });
+      } else if (!data.username) {
+        await supabase
+          .from('profiles')
+          .update({ username: `${emailBase.toLowerCase().replace(/[^a-z0-9_]/g, '')}${u.id.slice(0, 4)}` })
+          .eq('user_id', u.id);
+      }
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        if (session?.user) setTimeout(() => { void ensureProfile(session.user); }, 0);
       }
     );
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      if (session?.user) void ensureProfile(session.user);
     });
 
     // Load stored theme + migrate legacy 'bunachat-darkmode'

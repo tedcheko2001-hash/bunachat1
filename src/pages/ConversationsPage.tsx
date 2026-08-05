@@ -14,7 +14,7 @@ interface Conversation {
 }
 
 interface ConversationWithProfile extends Conversation {
-  otherUser: { name: string; avatar_url: string | null; user_id: string };
+  otherUser: { name: string; username?: string | null; avatar_url: string | null; user_id: string; is_verified?: boolean | null };
   lastMessage?: { content: string; created_at: string };
   unreadCount: number;
 }
@@ -59,22 +59,35 @@ const ConversationsPage = () => {
     }
 
     const otherUserIds = convos.map(c => c.user1_id === user.id ? c.user2_id : c.user1_id);
-    
+
     const { data: profiles } = await (supabase as any)
       .from('profiles_public')
-      .select('user_id, name, avatar_url')
+      .select('user_id, name, username, avatar_url, is_verified')
       .in('user_id', otherUserIds);
 
-    const profileMap: Record<string, { name: string; avatar_url: string | null; user_id: string }> = {};
-    profiles?.forEach(p => {
+    const profileMap: Record<string, ConversationWithProfile['otherUser']> = {};
+    (profiles || []).forEach((p: any) => {
       profileMap[p.user_id] = p;
+    });
+
+    // Unread private messages grouped by sender
+    const { data: unreadRows } = await (supabase as any)
+      .from('messages')
+      .select('sender_id')
+      .eq('receiver_id', user.id)
+      .is('room_id', null)
+      .is('read_at', null);
+
+    const unreadMap: Record<string, number> = {};
+    (unreadRows || []).forEach((m: any) => {
+      unreadMap[m.sender_id] = (unreadMap[m.sender_id] || 0) + 1;
     });
 
     const enriched: ConversationWithProfile[] = [];
 
     for (const convo of convos) {
       const otherId = convo.user1_id === user.id ? convo.user2_id : convo.user1_id;
-      
+
       const { data: lastMsg } = await supabase
         .from('messages')
         .select('content, created_at')
@@ -82,15 +95,17 @@ const ConversationsPage = () => {
         .is('room_id', null)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       enriched.push({
         ...convo,
-        otherUser: profileMap[otherId] || { name: 'User', avatar_url: null, user_id: otherId },
+        otherUser: profileMap[otherId] || { name: 'Buna member', username: null, avatar_url: null, user_id: otherId },
         lastMessage: lastMsg || undefined,
-        unreadCount: 0,
+        unreadCount: unreadMap[otherId] || 0,
       });
     }
+
+    enriched.sort((a, b) => (b.unreadCount ? 1 : 0) - (a.unreadCount ? 1 : 0));
 
     setConversations(enriched);
     setLoading(false);
@@ -170,15 +185,25 @@ const ConversationsPage = () => {
               </div>
               <div className="flex-1 text-left min-w-0">
                 <p className="font-semibold truncate">{convo.otherUser.name}</p>
-                <p className="text-sm text-muted-foreground truncate">
+                {convo.otherUser.username && (
+                  <p className="text-xs text-primary truncate">@{convo.otherUser.username}</p>
+                )}
+                <p className={`text-sm truncate ${convo.unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
                   {convo.lastMessage?.content || 'No messages yet'}
                 </p>
               </div>
-              {convo.lastMessage && (
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {new Date(convo.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              )}
+              <div className="flex flex-col items-end gap-1">
+                {convo.lastMessage && (
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {new Date(convo.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
+                {convo.unreadCount > 0 && (
+                  <span className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-1.5">
+                    {convo.unreadCount > 99 ? '99+' : convo.unreadCount}
+                  </span>
+                )}
+              </div>
             </button>
           ))
         )}

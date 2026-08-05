@@ -323,7 +323,7 @@ const HomePage = () => {
                   <UserIdentity
                     profile={{
                       user_id: post.user_id,
-                      name: profile?.name || 'User',
+                      name: profile?.name || 'Buna member',
                       username: profile?.username,
                       avatar_url: profile?.avatar_url,
                       is_verified: profile?.is_verified,

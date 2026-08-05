@@ -653,7 +653,7 @@ const RoomChatPage = () => {
                   >
                     {!isMe && (
                       <p className="text-xs font-semibold mb-1 opacity-80">
-                        {senderProfile?.name || 'Unknown'}
+                        {senderProfile?.name || 'Buna member'}
                       </p>
                     )}
                     <p className="text-sm">{message.content}</p>
@@ -711,7 +711,7 @@ const RoomChatPage = () => {
           currentUserName={profiles[user?.id || '']?.name || 'You'}
           liveMessages={messages.slice(-30).map((m) => ({
             id: m.id,
-            name: profiles[m.sender_id]?.name || 'User',
+            name: profiles[m.sender_id]?.name || 'Buna member',
             content: m.content,
           }))}
           onSendMessage={async (text) => {

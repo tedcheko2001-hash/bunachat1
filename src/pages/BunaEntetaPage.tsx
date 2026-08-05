@@ -57,12 +57,13 @@ const BunaEntetaPage = () => {
       (profs || []).forEach((p: ProfileLite) => (profilesMap[p.user_id] = p));
     }
 
-    const enriched: Friendship[] = rows.map((r) => ({
-      ...r,
-      profile:
-        profilesMap[r.requester_id === user.id ? r.addressee_id : r.requester_id] ||
-        { user_id: '', name: 'User', avatar_url: null },
-    }));
+    const enriched: Friendship[] = rows.map((r) => {
+      const otherId = r.requester_id === user.id ? r.addressee_id : r.requester_id;
+      return {
+        ...r,
+        profile: profilesMap[otherId] || { user_id: otherId, name: 'Buna member', avatar_url: null },
+      };
+    });
 
     setFriends(enriched.filter((f) => f.status === 'accepted'));
     setRequests(
@@ -78,7 +79,15 @@ const BunaEntetaPage = () => {
 
   useEffect(() => {
     loadAll();
-  }, [loadAll]);
+    if (!user) return;
+    const channel = supabase
+      .channel('friendships-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'friendships' }, () => {
+        loadAll();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [loadAll, user]);
 
   const sendRequest = async (addresseeId: string, name: string) => {
     if (!user) return;

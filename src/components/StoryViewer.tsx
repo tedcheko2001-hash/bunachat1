@@ -83,7 +83,7 @@ const StoryViewer = ({ userId, onClose }: StoryViewerProps) => {
         .in('user_id', ids);
       if (cancelled) return;
       const map = new Map((profs || []).map((p: any) => [p.user_id, p]));
-      setViewers(ids.map((id: string) => map.get(id) || { user_id: id, name: 'User', avatar_url: null }) as any);
+      setViewers(ids.map((id: string) => map.get(id) || { user_id: id, name: 'Buna member', avatar_url: null }) as any);
     })();
     return () => { cancelled = true; };
   }, [current?.id, isOwn]);
@@ -179,7 +179,7 @@ const StoryViewer = ({ userId, onClose }: StoryViewerProps) => {
           )}
         </div>
         <div className="flex-1 text-white">
-          <p className="font-semibold text-sm">{profile?.name || 'User'}</p>
+          <p className="font-semibold text-sm">{profile?.name || 'Buna member'}</p>
           <p className="text-xs opacity-80">
             {new Date(current.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </p>

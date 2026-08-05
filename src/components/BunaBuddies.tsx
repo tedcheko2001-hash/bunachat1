@@ -152,7 +152,7 @@ const BunaBuddies = () => {
               </div>
               <div className="flex-1 text-left min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className="font-medium text-sm truncate">{b.name || 'User'}</p>
+                  <p className="font-medium text-sm truncate">{b.name || 'Buna member'}</p>
                   {b.is_verified && <VerifiedBadge size={12} />}
                 </div>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">

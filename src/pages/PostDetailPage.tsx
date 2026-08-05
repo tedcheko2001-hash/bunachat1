@@ -262,7 +262,7 @@ const PostDetailPage = () => {
             </button>
             <div className="min-w-0 flex-1">
               <button onClick={openAuthor} className="flex items-center gap-1.5 hover:underline">
-                <p className="font-semibold">{postProfile?.name || 'User'}</p>
+                <p className="font-semibold">{postProfile?.name || 'Buna member'}</p>
                 {postProfile?.is_verified && <VerifiedBadge size={16} />}
               </button>
               {postProfile?.username && (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Home, MessageCircle, Coffee, Newspaper, Briefcase, User } from 'lucide-react';
+import { Home, MessageCircle, Coffee, Newspaper, Briefcase, User, Users } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp, t } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,36 +9,49 @@ const BottomNav = () => {
   const location = useLocation();
   const { language, user } = useApp();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [friendRequests, setFriendRequests] = useState(0);
 
   useEffect(() => {
-    if (user) {
-      fetchUnreadCount();
-
-      const channel = supabase
-        .channel('notifications-badge')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => {
-          fetchUnreadCount();
-        })
-        .subscribe();
-
-      return () => { supabase.removeChannel(channel); };
-    }
-  }, [user]);
-
-  const fetchUnreadCount = async () => {
     if (!user) return;
-    const { count } = await supabase
-      .from('notifications')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('is_read', false);
-    setUnreadCount(count || 0);
+    fetchCounts();
+
+    const channel = supabase
+      .channel('nav-badges')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, fetchCounts)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchCounts)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'friendships' }, fetchCounts)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, location.pathname]);
+
+  const fetchCounts = async () => {
+    if (!user) return;
+
+    const [{ count: msgCount }, { count: reqCount }] = await Promise.all([
+      (supabase as any)
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('receiver_id', user.id)
+        .is('room_id', null)
+        .is('read_at', null),
+      (supabase as any)
+        .from('friendships')
+        .select('id', { count: 'exact', head: true })
+        .eq('addressee_id', user.id)
+        .eq('status', 'pending'),
+    ]);
+
+    setUnreadCount(msgCount || 0);
+    setFriendRequests(reqCount || 0);
   };
 
   const navItems = [
     { icon: Home, label: t('home', language), path: '/home' },
     { icon: MessageCircle, label: t('chat', language), path: '/conversations', badge: unreadCount },
     { icon: Coffee, label: t('bunaRooms', language), path: '/rooms' },
+    { icon: Users, label: 'Enteta', path: '/friends', badge: friendRequests },
     { icon: Newspaper, label: t('news', language), path: '/news' },
     { icon: Briefcase, label: t('opportunities', language), path: '/opportunities' },
     { icon: User, label: t('profile', language), path: '/profile' },
