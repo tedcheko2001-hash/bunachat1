@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Home, MessageCircle, Coffee, Newspaper, Briefcase, User } from 'lucide-react';
+import { Home, MessageCircle, Coffee, Newspaper, Briefcase, User, Users } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp, t } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
