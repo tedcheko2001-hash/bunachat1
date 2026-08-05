@@ -59,22 +59,35 @@ const ConversationsPage = () => {
     }
 
     const otherUserIds = convos.map(c => c.user1_id === user.id ? c.user2_id : c.user1_id);
-    
+
     const { data: profiles } = await (supabase as any)
       .from('profiles_public')
-      .select('user_id, name, avatar_url')
+      .select('user_id, name, username, avatar_url, is_verified')
       .in('user_id', otherUserIds);
 
-    const profileMap: Record<string, { name: string; avatar_url: string | null; user_id: string }> = {};
-    profiles?.forEach(p => {
+    const profileMap: Record<string, ConversationWithProfile['otherUser']> = {};
+    (profiles || []).forEach((p: any) => {
       profileMap[p.user_id] = p;
+    });
+
+    // Unread private messages grouped by sender
+    const { data: unreadRows } = await (supabase as any)
+      .from('messages')
+      .select('sender_id')
+      .eq('receiver_id', user.id)
+      .is('room_id', null)
+      .is('read_at', null);
+
+    const unreadMap: Record<string, number> = {};
+    (unreadRows || []).forEach((m: any) => {
+      unreadMap[m.sender_id] = (unreadMap[m.sender_id] || 0) + 1;
     });
 
     const enriched: ConversationWithProfile[] = [];
 
     for (const convo of convos) {
       const otherId = convo.user1_id === user.id ? convo.user2_id : convo.user1_id;
-      
+
       const { data: lastMsg } = await supabase
         .from('messages')
         .select('content, created_at')
@@ -82,15 +95,17 @@ const ConversationsPage = () => {
         .is('room_id', null)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       enriched.push({
         ...convo,
-        otherUser: profileMap[otherId] || { name: 'User', avatar_url: null, user_id: otherId },
+        otherUser: profileMap[otherId] || { name: 'Buna member', username: null, avatar_url: null, user_id: otherId },
         lastMessage: lastMsg || undefined,
-        unreadCount: 0,
+        unreadCount: unreadMap[otherId] || 0,
       });
     }
+
+    enriched.sort((a, b) => (b.unreadCount ? 1 : 0) - (a.unreadCount ? 1 : 0));
 
     setConversations(enriched);
     setLoading(false);
