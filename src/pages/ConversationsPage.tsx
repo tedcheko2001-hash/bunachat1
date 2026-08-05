@@ -185,15 +185,25 @@ const ConversationsPage = () => {
               </div>
               <div className="flex-1 text-left min-w-0">
                 <p className="font-semibold truncate">{convo.otherUser.name}</p>
-                <p className="text-sm text-muted-foreground truncate">
+                {convo.otherUser.username && (
+                  <p className="text-xs text-primary truncate">@{convo.otherUser.username}</p>
+                )}
+                <p className={`text-sm truncate ${convo.unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
                   {convo.lastMessage?.content || 'No messages yet'}
                 </p>
               </div>
-              {convo.lastMessage && (
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {new Date(convo.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              )}
+              <div className="flex flex-col items-end gap-1">
+                {convo.lastMessage && (
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {new Date(convo.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
+                {convo.unreadCount > 0 && (
+                  <span className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-1.5">
+                    {convo.unreadCount > 99 ? '99+' : convo.unreadCount}
+                  </span>
+                )}
+              </div>
             </button>
           ))
         )}
