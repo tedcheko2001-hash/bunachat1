@@ -104,7 +104,7 @@ const CommentItem = ({
                 onClick={goToProfile}
                 className="font-semibold text-sm hover:underline"
               >
-                {profile?.name || 'User'}
+                {profile?.name || 'Buna member'}
               </button>
               {profile?.is_verified && <VerifiedBadge size={14} />}
               {profile?.username && (

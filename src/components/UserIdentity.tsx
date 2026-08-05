@@ -40,7 +40,7 @@ const UserIdentity = ({
   const navigate = useNavigate();
   const { user } = useApp();
   const isMe = !!user && user.id === profile.user_id;
-  const name = profile.name || 'User';
+  const name = profile.name || 'Buna member';
 
   const openProfile = () => {
     if (!profile.user_id) return;

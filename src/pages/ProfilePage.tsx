@@ -223,7 +223,7 @@ const ProfilePage = () => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold">{profile?.name || 'User'}</h2>
+                <h2 className="text-xl font-semibold">{profile?.name || 'Buna member'}</h2>
                 {profile?.is_verified && <VerifiedBadge size={18} />}
                 <button
                   onClick={() => setEditingName(true)}

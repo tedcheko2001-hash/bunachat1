@@ -228,10 +228,10 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
           .select('name, avatar_url')
           .eq('user_id', peerId)
           .maybeSingle();
-        name = data?.name || 'User';
+        name = data?.name || 'Buna member';
         avatar = data?.avatar_url ?? null;
       }
-      setCall({ peerId, peerName: name || 'User', peerAvatar: avatar, video, role: 'caller', status: 'calling' });
+      setCall({ peerId, peerName: name || 'Buna member', peerAvatar: avatar, video, role: 'caller', status: 'calling' });
 
       try {
         const stream = await getMedia(video);
