@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Home, MessageCircle, Coffee, Newspaper, Briefcase, User, Users } from 'lucide-react';
+import { Home, MessageCircle, Coffee, User, Users, GraduationCap } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp, t } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +10,7 @@ const BottomNav = () => {
   const { language, user } = useApp();
   const [unreadCount, setUnreadCount] = useState(0);
   const [friendRequests, setFriendRequests] = useState(0);
+  const [alerts, setAlerts] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -29,7 +30,7 @@ const BottomNav = () => {
   const fetchCounts = async () => {
     if (!user) return;
 
-    const [{ count: msgCount }, { count: reqCount }] = await Promise.all([
+    const [{ count: msgCount }, { count: reqCount }, { count: notifCount }] = await Promise.all([
       (supabase as any)
         .from('messages')
         .select('id', { count: 'exact', head: true })
@@ -41,10 +42,16 @@ const BottomNav = () => {
         .select('id', { count: 'exact', head: true })
         .eq('addressee_id', user.id)
         .eq('status', 'pending'),
+      (supabase as any)
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false),
     ]);
 
     setUnreadCount(msgCount || 0);
     setFriendRequests(reqCount || 0);
+    setAlerts(notifCount || 0);
   };
 
   const navItems = [
@@ -52,9 +59,8 @@ const BottomNav = () => {
     { icon: MessageCircle, label: t('chat', language), path: '/conversations', badge: unreadCount },
     { icon: Coffee, label: t('bunaRooms', language), path: '/rooms' },
     { icon: Users, label: 'Enteta', path: '/friends', badge: friendRequests },
-    { icon: Newspaper, label: t('news', language), path: '/news' },
-    { icon: Briefcase, label: t('opportunities', language), path: '/opportunities' },
-    { icon: User, label: t('profile', language), path: '/profile' },
+    { icon: GraduationCap, label: 'Study', path: '/study' },
+    { icon: User, label: t('profile', language), path: '/profile', badge: alerts },
   ];
 
   return (

@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocked_users: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       buna_rooms: {
         Row: {
           created_at: string
@@ -739,6 +760,8 @@ export type Database = {
           dark_mode: boolean
           id: string
           language: string
+          profile_visibility: string
+          show_last_seen: boolean
           updated_at: string
           user_id: string
         }
@@ -747,6 +770,8 @@ export type Database = {
           dark_mode?: boolean
           id?: string
           language?: string
+          profile_visibility?: string
+          show_last_seen?: boolean
           updated_at?: string
           user_id: string
         }
@@ -755,6 +780,8 @@ export type Database = {
           dark_mode?: boolean
           id?: string
           language?: string
+          profile_visibility?: string
+          show_last_seen?: boolean
           updated_at?: string
           user_id?: string
         }

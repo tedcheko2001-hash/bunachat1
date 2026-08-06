@@ -8,7 +8,9 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, Camera, Settings, Bell, Shield,
   Bot, LogOut, Mail, ChevronRight, Moon, Globe, Edit2, Check, X, Info, BadgeCheck, Users,
+  PhoneCall, GraduationCap,
 } from 'lucide-react';
+
 import VerifiedBadge from '@/components/VerifiedBadge';
 
 interface Profile {
@@ -31,13 +33,36 @@ const ProfilePage = () => {
   const [editingUsername, setEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [showAbout, setShowAbout] = useState(false);
+  const [stats, setStats] = useState({ posts: 0, followers: 0, following: 0, friends: 0 });
 
 
   useEffect(() => {
     if (user) {
       fetchProfile();
+      void fetchStats();
     }
   }, [user]);
+
+  const fetchStats = async () => {
+    if (!user) return;
+    const [posts, followers, following, friends] = await Promise.all([
+      (supabase as any).from('posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      (supabase as any).from('follows').select('id', { count: 'exact', head: true }).eq('following_id', user.id),
+      (supabase as any).from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', user.id),
+      (supabase as any)
+        .from('friendships')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
+    ]);
+    setStats({
+      posts: posts.count || 0,
+      followers: followers.count || 0,
+      following: following.count || 0,
+      friends: friends.count || 0,
+    });
+  };
+
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -153,12 +178,15 @@ const ProfilePage = () => {
   const menuItems = [
     { icon: BadgeCheck, label: profile?.is_verified ? 'Buna Sini Verified' : 'Get Verified', onClick: () => navigate('/verify'), highlight: true },
     { icon: Users, label: 'Buna Enteta (Friends)', onClick: () => navigate('/friends') },
+    { icon: PhoneCall, label: 'Call History', onClick: () => navigate('/calls') },
+    { icon: GraduationCap, label: 'Study Buna', onClick: () => navigate('/study') },
     { icon: Bell, label: 'Notifications', onClick: () => navigate('/notifications') },
     { icon: Settings, label: t('settings', language), onClick: () => navigate('/settings') },
     { icon: Shield, label: 'Privacy', onClick: () => navigate('/privacy') },
     { icon: Bot, label: 'Abol Assist', onClick: () => navigate('/assistant') },
     { icon: Info, label: 'About Buna Chat', onClick: () => setShowAbout(true) },
   ];
+
 
   return (
     <div className="page-container bg-background">
@@ -273,6 +301,23 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Stats */}
+      <div className="mx-4 mt-4 buna-card p-4 grid grid-cols-4 text-center">
+        {[
+          { label: 'Posts', value: stats.posts, onClick: () => navigate('/home') },
+          { label: 'Followers', value: stats.followers, onClick: () => navigate('/friends') },
+          { label: 'Following', value: stats.following, onClick: () => navigate('/friends') },
+          { label: 'Enteta', value: stats.friends, onClick: () => navigate('/friends') },
+        ].map((s) => (
+          <button key={s.label} onClick={s.onClick} className="py-1">
+            <p className="text-lg font-bold">{s.value}</p>
+            <p className="text-xs text-muted-foreground">{s.label}</p>
+          </button>
+        ))}
+      </div>
+
+
 
       {/* Quick Settings */}
       <div className="mx-4 mt-6 buna-card">
