@@ -8,7 +8,9 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, Camera, Settings, Bell, Shield,
   Bot, LogOut, Mail, ChevronRight, Moon, Globe, Edit2, Check, X, Info, BadgeCheck, Users,
+  PhoneCall, GraduationCap,
 } from 'lucide-react';
+
 import VerifiedBadge from '@/components/VerifiedBadge';
 
 interface Profile {
