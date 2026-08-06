@@ -176,12 +176,15 @@ const ProfilePage = () => {
   const menuItems = [
     { icon: BadgeCheck, label: profile?.is_verified ? 'Buna Sini Verified' : 'Get Verified', onClick: () => navigate('/verify'), highlight: true },
     { icon: Users, label: 'Buna Enteta (Friends)', onClick: () => navigate('/friends') },
+    { icon: PhoneCall, label: 'Call History', onClick: () => navigate('/calls') },
+    { icon: GraduationCap, label: 'Study Buna', onClick: () => navigate('/study') },
     { icon: Bell, label: 'Notifications', onClick: () => navigate('/notifications') },
     { icon: Settings, label: t('settings', language), onClick: () => navigate('/settings') },
     { icon: Shield, label: 'Privacy', onClick: () => navigate('/privacy') },
     { icon: Bot, label: 'Abol Assist', onClick: () => navigate('/assistant') },
     { icon: Info, label: 'About Buna Chat', onClick: () => setShowAbout(true) },
   ];
+
 
   return (
     <div className="page-container bg-background">
