@@ -407,7 +407,18 @@ const HomePage = () => {
                     <MessageSquare size={18} />
                     <span className="text-sm">{commentCounts[post.id] ?? 0}</span>
                   </button>
+                  {images.length > 0 && (
+                    <button
+                      onClick={() => handleShareToStory(images[0], post.content)}
+                      className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+                      aria-label="Share to story"
+                    >
+                      <Share2 size={18} />
+                      <span className="text-sm">Story</span>
+                    </button>
+                  )}
                 </div>
+
               </div>
             );
           })}
