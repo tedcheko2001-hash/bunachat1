@@ -31,13 +31,36 @@ const ProfilePage = () => {
   const [editingUsername, setEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [showAbout, setShowAbout] = useState(false);
+  const [stats, setStats] = useState({ posts: 0, followers: 0, following: 0, friends: 0 });
 
 
   useEffect(() => {
     if (user) {
       fetchProfile();
+      void fetchStats();
     }
   }, [user]);
+
+  const fetchStats = async () => {
+    if (!user) return;
+    const [posts, followers, following, friends] = await Promise.all([
+      (supabase as any).from('posts').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      (supabase as any).from('follows').select('id', { count: 'exact', head: true }).eq('following_id', user.id),
+      (supabase as any).from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', user.id),
+      (supabase as any)
+        .from('friendships')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
+    ]);
+    setStats({
+      posts: posts.count || 0,
+      followers: followers.count || 0,
+      following: following.count || 0,
+      friends: friends.count || 0,
+    });
+  };
+
 
   const fetchProfile = async () => {
     if (!user) return;
