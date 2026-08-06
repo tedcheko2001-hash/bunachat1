@@ -27,7 +27,10 @@ import PublicProfilePage from "./pages/PublicProfilePage";
 import VerificationRequestPage from "./pages/VerificationRequestPage";
 import AdminVerificationsPage from "./pages/AdminVerificationsPage";
 import BunaEntetaPage from "./pages/BunaEntetaPage";
+import CallHistoryPage from "./pages/CallHistoryPage";
 import NotFound from "./pages/NotFound";
+import AbolAssistWidget from "@/components/AbolAssistWidget";
+
 
 const queryClient = new QueryClient();
 
@@ -79,6 +82,8 @@ const AppRoutes = () => {
       <Route path="/verify" element={<ProtectedRoute><VerificationRequestPage /></ProtectedRoute>} />
       <Route path="/admin/verifications" element={<ProtectedRoute><AdminVerificationsPage /></ProtectedRoute>} />
       <Route path="/friends" element={<ProtectedRoute><BunaEntetaPage /></ProtectedRoute>} />
+      <Route path="/calls" element={<ProtectedRoute><CallHistoryPage /></ProtectedRoute>} />
+
 
 
       <Route path="*" element={<NotFound />} />
@@ -95,7 +100,9 @@ const App = () => (
         <AppProvider>
           <CallProvider>
             <AppRoutes />
+            <AbolAssistWidget />
           </CallProvider>
+
         </AppProvider>
       </BrowserRouter>
     </TooltipProvider>
