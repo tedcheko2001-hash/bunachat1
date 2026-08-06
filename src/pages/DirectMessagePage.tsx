@@ -300,9 +300,17 @@ const DirectMessagePage = () => {
             >
               <VideoIcon size={20} />
             </button>
+            <button
+              onClick={() => void toggleBlock()}
+              className={`p-2 rounded-full hover:bg-primary-foreground/10 transition-colors ${isBlocked ? 'text-destructive' : ''}`}
+              aria-label={isBlocked ? 'Unblock user' : 'Block user'}
+            >
+              <Ban size={20} />
+            </button>
           </div>
         )}
       </header>
+
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
