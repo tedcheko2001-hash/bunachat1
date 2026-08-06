@@ -18,8 +18,9 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 import {
   MessageCircle, Coffee, Newspaper, Briefcase,
   ChevronRight, Plus, Image as ImageIcon, MessageSquare, Search, X,
-  Globe, Users, Lock, Trash2,
+  Globe, Users, Lock, Trash2, Share2,
 } from 'lucide-react';
+
 
 type Visibility = 'public' | 'friends' | 'private';
 
@@ -86,6 +87,26 @@ const HomePage = () => {
     (data || []).forEach((r: any) => { map[r.post_id] = r.comment_count; });
     setCommentCounts(map);
   };
+
+  const handleShareToStory = async (mediaUrl: string, caption: string | null) => {
+    if (!user) return;
+    const { error } = await (supabase as any).from('stories').insert({
+      user_id: user.id,
+      media_url: mediaUrl,
+      media_type: 'image',
+      caption: caption || null,
+      visibility: 'public',
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    });
+    if (error) {
+      console.error(error);
+      toast.error('Could not share to your story');
+      return;
+    }
+    toast.success('Shared to your story for 24 hours');
+  };
+
+
 
   const fetchPosts = async () => {
     const { data, error } = await supabase
