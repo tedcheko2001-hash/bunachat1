@@ -379,6 +379,11 @@ const DirectMessagePage = () => {
 
       {/* Input */}
       <div className="p-4 bg-card border-t border-border shrink-0" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+        {isBlocked && (
+          <p className="text-xs text-destructive mb-2">
+            You blocked this person. Unblock from the header to message again.
+          </p>
+        )}
         <div className="flex items-center gap-3">
           <input
             type="text"
@@ -386,13 +391,15 @@ const DirectMessagePage = () => {
             onChange={(e) => { setNewMessage(e.target.value); sendTyping(e.target.value.length > 0); }}
             onBlur={() => sendTyping(false)}
             onKeyDown={handleKeyPress}
-            placeholder="Type a message..."
+            placeholder={isBlocked ? 'You blocked this user' : 'Type a message...'}
             className="input-buna flex-1"
+            disabled={isBlocked}
           />
           <button
             onClick={handleSend}
-            disabled={!newMessage.trim() || sending}
+            disabled={!newMessage.trim() || sending || isBlocked}
             className="p-3 bg-primary text-primary-foreground rounded-xl disabled:opacity-50 transition-opacity"
+
           >
             <Send size={20} />
           </button>
