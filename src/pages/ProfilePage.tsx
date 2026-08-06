@@ -302,6 +302,23 @@ const ProfilePage = () => {
         </div>
       </div>
 
+      {/* Stats */}
+      <div className="mx-4 mt-4 buna-card p-4 grid grid-cols-4 text-center">
+        {[
+          { label: 'Posts', value: stats.posts, onClick: () => navigate('/home') },
+          { label: 'Followers', value: stats.followers, onClick: () => navigate('/friends') },
+          { label: 'Following', value: stats.following, onClick: () => navigate('/friends') },
+          { label: 'Enteta', value: stats.friends, onClick: () => navigate('/friends') },
+        ].map((s) => (
+          <button key={s.label} onClick={s.onClick} className="py-1">
+            <p className="text-lg font-bold">{s.value}</p>
+            <p className="text-xs text-muted-foreground">{s.label}</p>
+          </button>
+        ))}
+      </div>
+
+
+
       {/* Quick Settings */}
       <div className="mx-4 mt-6 buna-card">
         <button
