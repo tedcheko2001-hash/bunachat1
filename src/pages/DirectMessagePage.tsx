@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Send, User, Trash2, Phone, Video as VideoIcon, Check, CheckCheck } from 'lucide-react';
+import { ArrowLeft, Send, User, Trash2, Phone, Video as VideoIcon, Check, CheckCheck, Ban } from 'lucide-react';
 import { useCall } from '@/contexts/CallContext';
 import { toast } from 'sonner';
 
@@ -39,6 +39,42 @@ const DirectMessagePage = () => {
   const lastTypingSent = useRef(0);
 
   const threadKey = user && userId ? [user.id, userId].sort().join('__') : null;
+
+  const [blockRowId, setBlockRowId] = useState<string | null>(null);
+  const isBlocked = !!blockRowId;
+
+  useEffect(() => {
+    if (!user || !userId) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from('blocked_users')
+        .select('id')
+        .eq('blocker_id', user.id)
+        .eq('blocked_id', userId)
+        .maybeSingle();
+      setBlockRowId(data?.id ?? null);
+    })();
+  }, [user, userId]);
+
+  const toggleBlock = async () => {
+    if (!user || !userId) return;
+    if (blockRowId) {
+      const { error } = await (supabase as any).from('blocked_users').delete().eq('id', blockRowId);
+      if (error) return toast.error('Could not unblock');
+      setBlockRowId(null);
+      toast.success('User unblocked');
+    } else {
+      const { data, error } = await (supabase as any)
+        .from('blocked_users')
+        .insert({ blocker_id: user.id, blocked_id: userId })
+        .select('id')
+        .single();
+      if (error) return toast.error('Could not block');
+      setBlockRowId(data.id);
+      toast.success('User blocked');
+    }
+  };
+
 
   const markIncomingRead = async () => {
     if (!user || !userId) return;
