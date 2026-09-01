@@ -69,7 +69,7 @@ const ProfilePage = () => {
 
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, user_id, name, username, avatar_url, bio, is_verified, created_at, updated_at')
       .eq('user_id', user.id)
       .maybeSingle();
 
